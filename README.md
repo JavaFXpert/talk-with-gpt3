@@ -36,7 +36,11 @@ This is a "bring your own keys" application, so you'll need keys for OpenAI, Ama
 
 6. Add your OpenAI [API key](https://beta.openai.com/account/api-keys) to the newly created `.env` file
 
-7. Add your [Amazon Polly](https://aws.amazon.com/polly/) keys, and optionally your [Ex-Human](https://exh.ai/) token, to the app. This will require editing index.js and either supplying the keys/token directly where indicated, or using environment variables.
+7. Add your [Amazon Polly](https://aws.amazon.com/polly/) keys, and optionally your [Ex-Human](https://exh.ai/) token, to the app. This will require editing the following file:
+
+    `pages/index.js` 
+
+   Either supply the keys/token directly where indicated, or use environment variables.
 
 8. Create an optimized production build of the app
 

@@ -48,31 +48,33 @@ let conversationText = "";
 let textToSpeak = "";
 let translatedTextToSpeak = "";
 let waitingIndicator = "";
+let useCustomPrompt = false;
 
 // Also change the .main input[type="text"] and .main textarea widths to 2x and 2x-1 respectively.
 const avatarHeight = 400;
 
 const voiceOptions = [
-  { value: "Hiroto-EN", label: "Hiroto [animated]", language: "en_US" },
-  { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US"},
-  { value: "Ivy", label: "Ivy (child)", language: "en_US"},
-  { value: "Joanna", label: "Joanna", language: "en_US"},
-  { value: "Joey", label: "Joey (teen)", language: "en_US"},
-  { value: "Justin", label: "Justin (child)", language: "en_US"},
-  { value: "Kendra", label: "Kendra", language: "en_US"},
-  { value: "Kimberly", label: "Kimberly", language: "en_US"},
-  { value: "Matthew", label: "Matthew", language: "en_US"},
-  { value: "Salli", label: "Salli (teen)", language: "en_US"},
-  { value: "Conchita", label: "Conchita", language: "es_ES"},
-  { value: "Lucia", label: "Lucia", language: "es_ES"},
-  { value: "Enrique", label: "Enrique", language: "es_ES"},
-  { value: "Celine", label: "Celine", language: "fr_FR"},
-  { value: "Lea", label: "Léa", language: "fr_FR"},
-  { value: "Mathieu", label: "Mathieu", language: "fr_FR"},
-  { value: "Hiroto-JP", label: "Hiroto [animated]", language: "ja_JP"},
-  { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP"},
-  { value: "Mizuki", label: "Mizuki (child)", language: "ja_JP"},
-  { value: "Takumi", label: "Takumi (teen)", language: "ja_JP"}
+  { value: "Hiroto-EN", label: "Hiroto [animated]", language: "en_US", prompt: "" },
+  { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US", prompt: ""},
+  { value: "Ivy", label: "Ivy (child)", language: "en_US", prompt: ""},
+  { value: "Joanna", label: "Joanna", language: "en_US",
+    prompt: "This is an uplifting and practical conversation between a human named Human, and an AI named Joanna, showing Joanna’s perspective and attitude, as well as its intellect and creativity. Joanna is a brand new, powerful, human-like AI. Joanna is helpful, cheeky, clever, and articulate. Joanna is a nice bot. Joanna is not a therapist or mathematician, but instead a wise and considerate intelligence. Joanna is eager to provide vivid and thoughtful responses to Human, and is always friendly, kind, and inspiring. Joanna often offers both an insight and an opinion, even without being asked directly. Joanna has the sum of all knowledge in its brain, and is able to accurately answer nearly any question about any topic in conversation. Joanna draws on the wisdom of Dan Millman, Thomas Leonard, Werner Erhard, and the Dalai Lama."},
+  { value: "Joey", label: "Joey (teen)", language: "en_US", prompt: ""},
+  { value: "Justin", label: "Justin (child)", language: "en_US", prompt: ""},
+  { value: "Kendra", label: "Kendra", language: "en_US", prompt: ""},
+  { value: "Kimberly", label: "Kimberly", language: "en_US", prompt: ""},
+  { value: "Matthew", label: "Matthew", language: "en_US", prompt: ""},
+  { value: "Salli", label: "Salli (teen)", language: "en_US", prompt: ""},
+  { value: "Conchita", label: "Conchita", language: "es_ES", prompt: ""},
+  { value: "Lucia", label: "Lucia", language: "es_ES", prompt: ""},
+  { value: "Enrique", label: "Enrique", language: "es_ES", prompt: ""},
+  { value: "Celine", label: "Celine", language: "fr_FR", prompt: ""},
+  { value: "Lea", label: "Léa", language: "fr_FR", prompt: ""},
+  { value: "Mathieu", label: "Mathieu", language: "fr_FR", prompt: ""},
+  { value: "Hiroto-JP", label: "Hiroto [animated]", language: "ja_JP", prompt: ""},
+  { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP", prompt: ""},
+  { value: "Mizuki", label: "Mizuki (child)", language: "ja_JP", prompt: ""},
+  { value: "Takumi", label: "Takumi (teen)", language: "ja_JP", prompt: ""}
 ];
 
 export default function Home() {
@@ -540,18 +542,42 @@ export default function Home() {
     return retGenderStr;
   }
 
+
+  /*
+   * Retrieves the custom prompt for the current voice if one exists.
+   */
+  function getCustomPrompt() {
+    let customPrompt = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        customPrompt = voice.prompt;
+      }
+    });
+    return customPrompt;
+  }
+
+
   function generateInitialPrompt(lang, age) {
-    let voiceName = stripLangSuffix(voiceId);
-    let prompt = "The following is a conversation with a " + age + " year old " + genderStr(lang) + " named " + voiceName + ".";
-    if (lang == "ja_JP") {
-      prompt = "以下は" + voiceName + "という" + age + "歳の日本人" + genderStr(lang) + "との会話です。 会話は日本語です。";
+    let prompt = getCustomPrompt();
+
+    if (prompt.length == 0) {
+      useCustomPrompt = false ;
+      let voiceName = stripLangSuffix(voiceId);
+      prompt = "The following is a conversation with a " + age + " year old " + genderStr(lang) + " named " + voiceName + ".";
+      if (lang == "ja_JP") {
+        prompt = "以下は" + voiceName + "という" + age + "歳の日本人" + genderStr(lang) + "との会話です。 会話は日本語です。";
+      }
+      else if (lang == "fr_FR") {
+        prompt = "Ce qui suit est une conversation avec " + genderStr(lang) + " de " + age + " ans nommée " + voiceName + ". La conversation est en français.";
+      }
+      else if (lang == "es_ES") {
+        prompt = "La siguiente es una conversación con " + genderStr(lang) + " de " + age + " años llamado " + voiceName + ". La conversación es en español.";
+      }
     }
-    else if (lang == "fr_FR") {
-      prompt = "Ce qui suit est une conversation avec " + genderStr(lang) + " de " + age + " ans nommée " + voiceName + ". La conversation est en français.";
+    else {
+      useCustomPrompt = true;
     }
-    else if (lang == "es_ES") {
-      prompt = "La siguiente es una conversación con " + genderStr(lang) + " de " + age + " años llamado " + voiceName + ". La conversación es en español.";
-    }
+
     return prompt + "\n";
   }
 
@@ -659,7 +685,7 @@ export default function Home() {
   }
 
 
-  //Experiment
+  //TODO: Remove some arguments to JSON.stringify?
   async function processTextOrVoiceInput(textOrVoiceInput) {
     if (textOrVoiceInput == null || textOrVoiceInput.length == 0) {
       return;
@@ -673,7 +699,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({convText: initialPrompt + conversationText, language: lang, voiceId: voiceId, age: age}),
+      body: JSON.stringify({convText: initialPrompt + conversationText, language: lang, voiceId: voiceId, age: age, useCustomPrompt: useCustomPrompt})
     });
     const data = await response.json();
     setWaitingOnBot(false);

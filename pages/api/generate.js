@@ -22,16 +22,16 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export default async function (req, res) {
-
   let compConvText = req.body.convText + "\n" + req.body.voiceId + ":";
 
   const completion = await openai.createCompletion({
-    model: "text-davinci-002",
+    model: req.body.useCustomPrompt ? "davinci" : "text-davinci-002",
     prompt: req.body.convText,
     temperature: 0.7,
-    frequency_penalty: 1.6,
+    frequency_penalty: 1.5,
     presence_penalty: 0.6,
-    max_tokens: 250
+    max_tokens: 150,
+    stop: ["\nHuman:", "\n" + req.body.voiceId + ":"]
   });
   res.status(200).json({ result: completion.data.choices[0].text});
 }

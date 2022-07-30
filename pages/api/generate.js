@@ -31,7 +31,8 @@ export default async function (req, res) {
     frequency_penalty: 1.5,
     presence_penalty: 0.6,
     max_tokens: 150,
-    stop: ["\nHuman:", "\n" + req.body.voiceId + ":"]
+    stop: ["\nHuman:"]
+    //stop: ["\nHuman:", "\n" + req.body.voiceId + ":"]
   });
   res.status(200).json({ result: completion.data.choices[0].text});
 }

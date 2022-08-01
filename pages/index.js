@@ -54,7 +54,7 @@ let useCustomPrompt = false;
 const avatarHeight = 400;
 
 const voiceOptions = [
-  { value: "Hiroto-EN", label: "Hiroto [animated]", language: "en_US", prompt: "" },
+  /*{ value: "Hiroto-EN", label: "Hiroto [animated]", language: "en_US", prompt: "" },*/
   { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US", prompt: ""},
   { value: "Ivy", label: "Ivy (child)", language: "en_US", prompt: ""},
   { value: "Joanna", label: "Joanna", language: "en_US",
@@ -102,7 +102,7 @@ export default function Home() {
       if (chatBotActive) {
         setIdleVideoLoop(true);
         let voiceName = stripLangSuffix(voiceId)
-        setVideoUrl(`videos/${voiceName}.mp4`);
+        setVideoUrl(`videos/${voiceName}.mov`);
       }
       else {
         setIdleVideoLoop(false);
@@ -162,7 +162,7 @@ export default function Home() {
       if (voiceName == "Hiroto" || voiceName == "Masahiro") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
-        setVideoUrl(`videos/${voiceName}.mp4`);
+        setVideoUrl(`videos/${voiceName}.mov`);
 
         setVoiceId(voiceName + "-EN");
         tempVoiceId = voiceName + "-EN";
@@ -196,7 +196,7 @@ export default function Home() {
       if (voiceName == "Hiroto" || voiceName == "Masahiro") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
-        setVideoUrl(`videos/${voiceName}.mp4`);
+        setVideoUrl(`videos/${voiceName}.mov`);
 
         setVoiceId(voiceName + "-JP");
         tempVoiceId = voiceName + "-JP";
@@ -224,7 +224,7 @@ export default function Home() {
     if (voiceName == "Hiroto" || voiceName == "Masahiro") {
       setUseVideoAvatar(true);
       setIdleVideoLoop(true);
-      setVideoUrl(`videos/${voiceName}.mp4`);
+      setVideoUrl(`videos/${voiceName}.mov`);
     }
     else {
       setUseVideoAvatar(false);
@@ -525,7 +525,7 @@ export default function Home() {
 
 
   function genderStr(lang) {
-    let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro', 'Masahiro', 'Mathieu', 'Matthew', 'Takumi'];
+    let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro-EN', 'Masahiro-JP', 'Mathieu', 'Matthew', 'Takumi'];
     let retGenderStr = "";
     if (lang == "ja_JP") {
       retGenderStr = males.includes(voiceId) ? '男性' : '女性';
@@ -827,9 +827,9 @@ export default function Home() {
             {useVideoAvatar ? (
               <div className='video-container'>
                 <video height={avatarHeight}
-                       width={avatarHeight * 0.448}
+                       width={avatarHeight * 0.445}
                        loop={true}
-                       src="videos/office_left.mov"
+                       src="videos/office_left.mp4"
                        muted={true}
                        autoPlay/>
                 <video height={avatarHeight}
@@ -842,9 +842,9 @@ export default function Home() {
                        poster={voiceId.startsWith("Masahiro") ? "Masahiro.png" : "Hiroto.png"}
                 />
                 <video height={avatarHeight}
-                       width={avatarHeight * 0.448}
+                       width={avatarHeight * 0.443}
                        loop={true}
-                       src="videos/office_right.mov"
+                       src="videos/office_right.mp4"
                        muted={true}
                        autoPlay/>
               </div>

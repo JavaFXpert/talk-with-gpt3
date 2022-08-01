@@ -8,7 +8,11 @@ The **Talk w/GPT-3** application was developed by [James L. Weaver](https://gith
 - **Voice text to speech:** [Amazon Polly](https://aws.amazon.com/polly/)
 - **Animated speaking avatars:** [Ex-Human](https://exh.ai/) Talking Heads
 
-This is a "bring your own keys" application, so you'll need keys for OpenAI, Amazon Polly, and optionally Ex-Human. Follow the instructions below to try the **Talk w/GPT-3** application out for yourself.
+This is a "bring your own keys" application, so you'll need keys for OpenAI, Amazon Polly, and optionally Ex-Human. 
+
+Here's a three-minute [video that demonstrates some of the application's functionality](https://youtu.be/QXnWlAQq8tY).
+
+Follow the instructions below to try the **Talk w/GPT-3** application out for yourself. 
 
 ## Setup
 

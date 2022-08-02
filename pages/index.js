@@ -16,6 +16,7 @@
 
 //TODO: Handle hydration error on startup
 //TODO: Implement slower frame rate for videos
+//TODO: Consider using kanji or kana for the Japanese character names
 
 const AWS = require('aws-sdk')
 
@@ -54,7 +55,7 @@ let useCustomPrompt = false;
 const avatarHeight = 400;
 
 const voiceOptions = [
-  /*{ value: "Hiroto-EN", label: "Hiroto [animated]", language: "en_US", prompt: "" },*/
+  { value: "Hiroto-EN", label: "Yukiko [animated]", language: "en_US", prompt: "" },
   { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US", prompt: ""},
   { value: "Ivy", label: "Ivy (child)", language: "en_US", prompt: ""},
   { value: "Joanna", label: "Joanna", language: "en_US",
@@ -71,7 +72,7 @@ const voiceOptions = [
   { value: "Celine", label: "Celine", language: "fr_FR", prompt: ""},
   { value: "Lea", label: "Léa", language: "fr_FR", prompt: ""},
   { value: "Mathieu", label: "Mathieu", language: "fr_FR", prompt: ""},
-  { value: "Hiroto-JP", label: "Hiroto [animated]", language: "ja_JP", prompt: ""},
+  { value: "Hiroto-JP", label: "Yukiko [animated]", language: "ja_JP", prompt: ""},
   { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP", prompt: ""},
   { value: "Mizuki", label: "Mizuki (child)", language: "ja_JP", prompt: ""},
   { value: "Takumi", label: "Takumi (teen)", language: "ja_JP", prompt: ""}
@@ -159,13 +160,19 @@ export default function Home() {
     let voiceName = stripLangSuffix(voiceId);
     let tempVoiceId = "Unknown";
     if (langArg == "en_US") {
-      if (voiceName == "Hiroto" || voiceName == "Masahiro") {
+      if (voiceName == "Yukiko" || voiceName == "Masahiro") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
 
-        setVoiceId(voiceName + "-EN");
-        tempVoiceId = voiceName + "-EN";
+        if (voiceName == "Yukiko") {
+          setVoiceId("Hiroto-EN");
+          tempVoiceId = "Hiroto-EN";
+        }
+        else {
+          setVoiceId(voiceName + "-EN");
+          tempVoiceId = voiceName + "-EN";
+        }
       }
       else {
         setUseVideoAvatar(false);
@@ -193,13 +200,19 @@ export default function Home() {
       tempVoiceId = "Celine";
     }
     else if (langArg == "ja_JP") {
-      if (voiceName == "Hiroto" || voiceName == "Masahiro") {
+      if (voiceName == "Yukiko" || voiceName == "Masahiro") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
 
-        setVoiceId(voiceName + "-JP");
-        tempVoiceId = voiceName + "-JP";
+        if (voiceName == "Yukiko") {
+          setVoiceId("Hiroto-JP");
+          tempVoiceId = "Hiroto-JP";
+        }
+        else {
+          setVoiceId(voiceName + "-JP");
+          tempVoiceId = voiceName + "-JP";
+        }
       }
       else {
         setUseVideoAvatar(false);
@@ -221,7 +234,7 @@ export default function Home() {
     //TODO: Handle in a non-hardcoded way
     //TODO: Factor out common code in this and handleLanguageChange()
     let voiceName = stripLangSuffix(voiceIdArg);
-    if (voiceName == "Hiroto" || voiceName == "Masahiro") {
+    if (voiceName == "Yukiko" || voiceName == "Masahiro") {
       setUseVideoAvatar(true);
       setIdleVideoLoop(true);
       setVideoUrl(`videos/${voiceName}.mov`);
@@ -232,7 +245,7 @@ export default function Home() {
       setVideoUrl("");
     }
 
-    if (voiceName == "Hiroto") {
+    if (voiceName == "Yukiko") {
       setAge("25");
     }
     else if (voiceName == "Ivy") {
@@ -515,10 +528,14 @@ export default function Home() {
 
 
   // Remove language suffix from voice identifier if present. Takes the form of "-XX".
-  function stripLangSuffix(voiceArg) {
+  function stripLangSuffix(voiceArg, stripOnly) {
     let voiceName = voiceArg;
     if (voiceArg.indexOf("-") > 0) {
       voiceName = voiceArg.substr(0, voiceArg.indexOf("-"));
+      if (voiceName == "Hiroto" && !stripOnly) {
+        // Rename "Hiroto" to "Yukiko"
+        voiceName = "Yukiko";
+      }
     }
     return voiceName;
   } //stripLangSuffix
@@ -646,6 +663,7 @@ export default function Home() {
     }
   }
 
+  //TODO: Add error handling so that it doesn't freeze if the video doesn't load.
   async function doVideoSpeak(input) {
     const response = await fetch(exHumanEndpoint, {
       method: "POST",
@@ -654,7 +672,7 @@ export default function Home() {
         "Authorization": "Bearer " + EX_HUMAN_TOKEN
       },
       body: JSON.stringify({
-        bot_name: stripLangSuffix(voiceId),
+        bot_name: stripLangSuffix(voiceId, true),
         bot_response: input.Text,
         voice_name: voiceId})
     });
@@ -839,7 +857,7 @@ export default function Home() {
                        onPlay={e => {if (!idleVideoLoop) {handleStopListenClick()}}}
                        onEnded={e => handleListenClick()}
                        src={videoUrl}
-                       poster={voiceId.startsWith("Masahiro") ? "Masahiro.png" : "Hiroto.png"}
+                       poster={voiceId.startsWith("Masahiro") ? "Masahiro.png" : "Yukiko.png"}
                 />
                 <video height={avatarHeight}
                        width={avatarHeight * 0.443}

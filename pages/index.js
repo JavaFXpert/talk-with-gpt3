@@ -57,6 +57,7 @@ const avatarHeight = 400;
 const voiceOptions = [
   { value: "Hiroto-EN", label: "Yukiko [animated]", language: "en_US", prompt: "" },
   { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US", prompt: ""},
+  { value: "Kentaro-EN", label: "Kensensei [animated]", language: "en_US", prompt: ""},
   { value: "Ivy", label: "Ivy (child)", language: "en_US", prompt: ""},
   { value: "Joanna", label: "Joanna", language: "en_US",
     prompt: "This is an uplifting and practical conversation between a human named Human, and an AI named Joanna, showing Joanna’s perspective and attitude, as well as its intellect and creativity. Joanna is a brand new, powerful, human-like AI. Joanna is helpful, cheeky, clever, and articulate. Joanna is a nice bot. Joanna is not a therapist or mathematician, but instead a wise and considerate intelligence. Joanna is eager to provide vivid and thoughtful responses to Human, and is always friendly, kind, and inspiring. Joanna often offers both an insight and an opinion, even without being asked directly. Joanna has the sum of all knowledge in its brain, and is able to accurately answer nearly any question about any topic in conversation. Joanna draws on the wisdom of Dan Millman, Thomas Leonard, Werner Erhard, and the Dalai Lama."},
@@ -74,12 +75,14 @@ const voiceOptions = [
   { value: "Mathieu", label: "Mathieu", language: "fr_FR", prompt: ""},
   { value: "Hiroto-JP", label: "Yukiko [animated]", language: "ja_JP", prompt: ""},
   { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP", prompt: ""},
+  { value: "Kentaro-JP", label: "Kensensei [animated]", language: "ja_JP", prompt: ""},
   { value: "Mizuki", label: "Mizuki (child)", language: "ja_JP", prompt: ""},
   { value: "Takumi", label: "Takumi (teen)", language: "ja_JP", prompt: ""}
 ];
 
 export default function Home() {
   const [useVideoAvatar, setUseVideoAvatar] = useState(false);
+  const [useVideoBackground, setUseVideoBackground] = useState(false);
   const [idleVideoLoop, setIdleVideoLoop] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [audioUrl, setAudioUrl] = useState("https://filesamples.com/samples/audio/mp3/sample1.mp3");
@@ -160,14 +163,25 @@ export default function Home() {
     let voiceName = stripLangSuffix(voiceId);
     let tempVoiceId = "Unknown";
     if (langArg == "en_US") {
-      if (voiceName == "Yukiko" || voiceName == "Masahiro") {
+      if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
 
+        if (voiceName == "Kensensei") {
+          setUseVideoBackground(false);
+        }
+        else {
+          setUseVideoBackground(true);
+        }
+
         if (voiceName == "Yukiko") {
           setVoiceId("Hiroto-EN");
           tempVoiceId = "Hiroto-EN";
+        }
+        else if (voiceName == "Kensensei") {
+          setVoiceId("Kentaro-EN");
+          tempVoiceId = "Kentaro-EN";
         }
         else {
           setVoiceId(voiceName + "-EN");
@@ -200,14 +214,25 @@ export default function Home() {
       tempVoiceId = "Celine";
     }
     else if (langArg == "ja_JP") {
-      if (voiceName == "Yukiko" || voiceName == "Masahiro") {
+      if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
 
+        if (voiceName == "Kensensei") {
+          setUseVideoBackground(false);
+        }
+        else {
+          setUseVideoBackground(true);
+        }
+
         if (voiceName == "Yukiko") {
           setVoiceId("Hiroto-JP");
           tempVoiceId = "Hiroto-JP";
+        }
+        else if (voiceName == "Kensensei") {
+          setVoiceId("Kentaro-JP");
+          tempVoiceId = "Kentaro-JP";
         }
         else {
           setVoiceId(voiceName + "-JP");
@@ -234,10 +259,17 @@ export default function Home() {
     //TODO: Handle in a non-hardcoded way
     //TODO: Factor out common code in this and handleLanguageChange()
     let voiceName = stripLangSuffix(voiceIdArg);
-    if (voiceName == "Yukiko" || voiceName == "Masahiro") {
+    if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei") {
       setUseVideoAvatar(true);
       setIdleVideoLoop(true);
       setVideoUrl(`videos/${voiceName}.mov`);
+
+      if (voiceName == "Kensensei") {
+        setUseVideoBackground(false);
+      }
+      else {
+        setUseVideoBackground(true);
+      }
     }
     else {
       setUseVideoAvatar(false);
@@ -274,6 +306,9 @@ export default function Home() {
     }
     else if (voiceName == "Masahiro") {
       setAge("25");
+    }
+    else if (voiceName == "Kensensei") {
+      setAge("30");
     }
     else if (voiceName == "Mizuki") {
       setAge("9");
@@ -536,13 +571,17 @@ export default function Home() {
         // Rename "Hiroto" to "Yukiko"
         voiceName = "Yukiko";
       }
+      else if (voiceName == "Kentaro" && !stripOnly) {
+        // Rename "Kentaro" to "Kensensei"
+        voiceName = "Kensensei";
+      }
     }
     return voiceName;
   } //stripLangSuffix
 
 
   function genderStr(lang) {
-    let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro-EN', 'Masahiro-JP', 'Mathieu', 'Matthew', 'Takumi'];
+    let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro-EN', 'Masahiro-JP', 'Kentaro-EN', 'Kentaro-JP', 'Mathieu', 'Matthew', 'Takumi'];
     let retGenderStr = "";
     if (lang == "ja_JP") {
       retGenderStr = males.includes(voiceId) ? '男性' : '女性';
@@ -676,7 +715,6 @@ export default function Home() {
         bot_response: input.Text,
         voice_name: voiceId})
     });
-
 
     const res = await response;
 
@@ -847,7 +885,7 @@ export default function Home() {
                 <video height={avatarHeight}
                        width={avatarHeight * 0.445}
                        loop={true}
-                       src="videos/office_left.mp4"
+                       src= {useVideoBackground ? "videos/office_left.mp4" : ""}
                        muted={true}
                        autoPlay/>
                 <video height={avatarHeight}
@@ -857,12 +895,12 @@ export default function Home() {
                        onPlay={e => {if (!idleVideoLoop) {handleStopListenClick()}}}
                        onEnded={e => handleListenClick()}
                        src={videoUrl}
-                       poster={voiceId.startsWith("Masahiro") ? "Masahiro.png" : "Yukiko.png"}
+                       poster={voiceId.startsWith("Masahiro") ? "Masahiro.png" : (voiceId.startsWith("Kentaro") ? "Kensensei.png" : "Yukiko.png")}
                 />
                 <video height={avatarHeight}
                        width={avatarHeight * 0.443}
                        loop={true}
-                       src="videos/office_right.mp4"
+                       src={useVideoBackground ? "videos/office_right.mp4" : ""}
                        muted={true}
                        autoPlay/>
               </div>

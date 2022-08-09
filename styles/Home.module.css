@@ -90,6 +90,13 @@
   /* height: 600px; */
 }
 
+.main input[type="checkbox"] {
+  /*padding: 8px 12px;*/
+  border: 1px solid #10a37f;
+  border-radius: 4px;
+  margin-left: 17px;
+}
+
 .main button {
   padding: 8px 9px;
   border: 1px solid #10a37f;

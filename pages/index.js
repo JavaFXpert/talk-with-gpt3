@@ -46,7 +46,6 @@ const translate = new AWS.Translate({region: AWS.config.region});
 const Polly = new AWS.Polly({region: AWS.config.region});
 
 let conversationText = "";
-let conversationTextEn = "";
 let textToSpeak = "";
 let translatedTextToSpeak = "";
 let waitingIndicator = "";
@@ -81,19 +80,6 @@ const voiceOptions = [
   { value: "Takumi", label: "Takumi (teen)", language: "ja_JP", prompt: ""}
 ];
 
-//TODO: Consider adding formality indicator
-const en2ja = {
-  "Hey, what's up?": "こんにちは。調子はどう？",
-  "Hey there!": "こんにちは！",
-  "Hey, how are you doing?": "こんにちは、調子はどう？",
-  "Hey": "こんにちは。",
-  "Hey!": "こんにちは！",
-  "I'm glad to hear that!": "それは良かったです！",
-  "That's great to hear!": "それは良かったです！",
-  "Hey there! How are you doing today?": "こんにちは！今日は調子はどうですか？",
-  "Hey! How are you doing?": "こんにちは！調子はどう",
-}
-
 export default function Home() {
   const [useVideoAvatar, setUseVideoAvatar] = useState(false);
   const [useVideoBackground, setUseVideoBackground] = useState(false);
@@ -109,20 +95,10 @@ export default function Home() {
   const [microphoneActive, setMicrophoneActive] = useState(false);
   const [chatBotActive, setChatBotActive] = useState(true);
   const [waitingOnBot, setWaitingOnBot] = useState(false);
-  const [formalSpeech, setFormalSpeech] = useState(true);
 
   const translateVoiceId = "Joanna";
 
   let initialPrompt = generateInitialPrompt(lang, age);
-  let initialPromptEn = generateInitialPrompt("en_US", age);
-
-  function findCorrectedTranslation(text) {
-    let retCorrectedTranslation = null;
-    if (lang == "ja_JP") {
-      retCorrectedTranslation = en2ja[text];
-    }
-    return retCorrectedTranslation;
-  }
 
   function handleListenClick() {
     //TODO Move this perhaps to a separate function?
@@ -273,10 +249,8 @@ export default function Home() {
       }
     }
     initialPrompt = generateInitialPrompt(langArg, age);
-    initialPromptEn = generateInitialPrompt("en_US", age);
     handleVoiceChange(tempVoiceId);
     conversationText = "";
-    conversationTextEn = "";
     translatedTextToSpeak = "";
   }
 
@@ -348,9 +322,7 @@ export default function Home() {
     setChatBotActive(true);
 
     initialPrompt = generateInitialPrompt(lang, age);
-    initialPromptEn = generateInitialPrompt("en_US", age);
     conversationText = "";
-    conversationTextEn = "";
     translatedTextToSpeak = "";
   }
 
@@ -358,19 +330,12 @@ export default function Home() {
     setAge(ageArg);
     setChatBotActive(true);
     initialPrompt = "";
-    initialPromptEn = "";
     conversationText = "";
-    conversationTextEn = "";
     translatedTextToSpeak = "";
   }
 
   function addConversationText(text) {
     conversationText += text + "\n";
-    translatedTextToSpeak = "";
-  }
-
-  function addConversationTextEn(text) {
-    conversationTextEn += text + "\n";
     translatedTextToSpeak = "";
   }
 
@@ -507,7 +472,6 @@ export default function Home() {
         if (chatBotActive) {
           resetTranscript();
           conversationText = "";
-          conversationTextEn = "";
           translatedTextToSpeak = "";
           if (lang == "en_US") {
             say("The conversation has been erased.");
@@ -679,10 +643,7 @@ export default function Home() {
     var params = {
       Text: inputText,
       SourceLanguageCode: lang.replaceAll("_", "-"),
-      TargetLanguageCode: "en-US",
-      Settings: {
-        "Profanity": "MASK"
-      }
+      TargetLanguageCode: "en-US"
     };
 
     translate.translateText(params, function(err, data) {
@@ -785,43 +746,8 @@ export default function Home() {
     if (textOrVoiceInput == null || textOrVoiceInput.length == 0) {
       return;
     }
-
-    addConversationText("Human: " + textOrVoiceInput);
-
-    // Translate input to English before adding it to English conversation text and sending to GPT-3
-    if (lang != "en_US") {
-      let params = {
-        Text: textOrVoiceInput,
-        SourceLanguageCode: lang.replaceAll("_", "-"),
-        TargetLanguageCode: "en-US",
-        Settings: {
-          "Profanity": "MASK"
-        }
-      };
-
-      translate.translateText(params, function (err, data) {
-        if (err) {
-          console.log(err, err.stack);
-          console.log("Error calling Amazon Translate. " + err.message);
-        }
-        if (data) {
-          console.log("English data.TranslatedText: " + data.TranslatedText);
-          addConversationTextEn("Human: " + data.TranslatedText);
-          processVoiceOrTextInputEn(data.TranslatedText);
-        }
-      });
-      //textOrVoiceInputEn = transText(textOrVoiceInput, lang, "en_US");
-    }
-    else {
-      addConversationTextEn("Human: " + textOrVoiceInput);
-      await processVoiceOrTextInputEn(textOrVoiceInput);
-    }
-  }
-
-  async function processVoiceOrTextInputEn(textOrVoiceInputEn) {
-
     initialPrompt = generateInitialPrompt(lang, age);
-    initialPromptEn = generateInitialPrompt("en_US", age);
+    addConversationText("Human: " + textOrVoiceInput);
     setWaitingOnBot(true);
 
     const response = await fetch("/api/generate", {
@@ -829,87 +755,19 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        convText: initialPromptEn + conversationTextEn,
-        voiceId: voiceId,
-        age: age,
-        useCustomPrompt: useCustomPrompt
-      })
+      body: JSON.stringify({convText: initialPrompt + conversationText, language: lang, voiceId: voiceId, age: age, useCustomPrompt: useCustomPrompt})
     });
     const data = await response.json();
     setWaitingOnBot(false);
     setResult(data.result);
-    //console.log("result from GPT-3: " + data.result);
 
-    if (data.result == "") {
-      console.log("No result from GPT-3");
-      return;
-    }
+    addConversationText(data.result.trim() + "\n");
+    textToSpeak = data.result.trim().replace(stripLangSuffix(voiceId) + ":", "");
 
-    let trimmedResult = data.result.trim();
-    //console.log("trimmedResult:'" + trimmedResult + "'");
-
-    let aiCharacter = trimmedResult.substring(0, trimmedResult.indexOf(":"));
-    //console.log("aiCharacter: '" + aiCharacter + "'");
-    if (aiCharacter == "") {
-      aiCharacter = stripLangSuffix(voiceId);
-      console.log("aiCharacter now: '" + aiCharacter + "'");
-    }
-
-    let phraseEn = trimmedResult.substring(trimmedResult.indexOf(":") + 1).trim();
-    console.log("phraseEn:'" + phraseEn + "'");
-
-    addConversationTextEn(trimmedResult + "\n");
-
-    // If another language, translate response back to that language
-    if (lang != "en_US") {
-      let params = {
-        Text: phraseEn,
-        SourceLanguageCode: "en-US",
-        TargetLanguageCode: lang.replaceAll("_", "-"),
-        Settings: {
-          "Formality": formalSpeech ? "FORMAL" : "INFORMAL",
-          "Profanity": "MASK"
-        }
-      };
-
-      let correctedTranslation = findCorrectedTranslation(phraseEn);
-      if (correctedTranslation != null) {
-        console.log("correctedTranslation:'" + correctedTranslation + "'");
-        addConversationText(aiCharacter + ": " + correctedTranslation + "\n");
-        textToSpeak = correctedTranslation;
-        showAndTell(textToSpeak);
-      }
-      else {
-        translate.translateText(params, function (err, data) {
-          if (err) {
-            console.log(err, err.stack);
-            console.log("Error calling Amazon Translate. " + err.message);
-            textOrVoiceInputEn = "[error translating]";
-          }
-          if (data) {
-            //console.log("Native data.TranslatedText: " + data.TranslatedText);
-            addConversationText(aiCharacter + ": " + data.TranslatedText.trim() + "\n");
-            textToSpeak = data.TranslatedText.trim();
-            showAndTell(textToSpeak);
-
-            //setTextInput("");
-          }
-        });
-      }
-    }
-    else {
-      addConversationText(aiCharacter + ": " + phraseEn + "\n");
-      textToSpeak = phraseEn;
-      showAndTell(textToSpeak);
-    }
-  }
-
-  function showAndTell(translatedTextToSpeak) {
-    //console.log("In showAndTell, translatedTextToSpeak: " + translatedTextToSpeak);
+    setTextInput("");
 
     const input = {
-      Text: translatedTextToSpeak,
+      Text: textToSpeak,
       OutputFormat: "mp3",
       VoiceId: voiceId,
       LanguageCode: lang.replaceAll("_", "-")
@@ -919,6 +777,7 @@ export default function Home() {
 
     const textarea = document.getElementById("conversation");
     textarea.scrollTop = textarea.scrollHeight;
+
   }
 
   async function onSubmit(event) {
@@ -1019,18 +878,6 @@ export default function Home() {
                 <option value="90">90 y/o</option>
                 <option value="100">100 y/o</option>
               </select>
-
-              {lang != "en_US" ? (
-                <label>
-                  <input type="checkbox"
-                    checked={formalSpeech}
-                    onChange={(e) => {
-                      setFormalSpeech(!formalSpeech);
-                    }}
-                  />
-                  Formal
-                 </label>
-              ) : null}
             </span>
 
             {useVideoAvatar ? (
@@ -1064,7 +911,7 @@ export default function Home() {
                       width={avatarHeight * 1.77}
                       rows={avatarHeight / (useVideoAvatar ? 30 : 12)}
                       readOnly={true}
-                      value={initialPromptEn + '\n' + conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
+                      value={initialPrompt + '\n' + conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
                       title="GPT-3 prompt / conversation"
             />
 

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-//TODO: Handle hydration error on startup
-//TODO: Implement slower frame rate for videos
-//TODO: Consider using kanji or kana for the Japanese character names
+//TODO: Put ages in the voiceOptions hashmap
+//TODO: Externalize the AI avatar configuration
 
 const AWS = require('aws-sdk')
 
@@ -25,6 +24,7 @@ import SpeechRecognition, {useSpeechRecognition} from 'react-speech-recognition'
 import {useState} from "react";
 import {useEffect} from "react";
 import styles from '../styles/Home.module.css'
+import {fulfillIntent} from './intent_matching.js';
 
 
 ///////////////////////// USER CONFIGURATION //////////////////////////
@@ -54,30 +54,254 @@ let useCustomPrompt = false;
 // Also change the .main input[type="text"] and .main textarea widths to 2x and 2x-1 respectively.
 const avatarHeight = 400;
 
+const GRADUATED = 99;
+const DIDNT_ATTEND = 0;
+
 const voiceOptions = [
-  { value: "Hiroto-EN", label: "Yukiko [animated]", language: "en_US", prompt: "" },
-  { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US", prompt: ""},
-  { value: "Kentaro-EN", label: "Kensensei [animated]", language: "en_US", prompt: ""},
-  { value: "Ivy", label: "Ivy (child)", language: "en_US", prompt: ""},
+  { value: "Hiroto-EN", label: "Yukiko [animated]", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Kentaro-EN", label: "Kensensei [animated]", language: "en_US",
+    nationality: "Japanese", phoneNum: "0, 1, 1, 5, 5, 5, 1, 2, 1, 2",
+    livesIn: "Nagoya, Japan", whereBorn: "Meitetsu Hospital in Japan", whereFrom: "Aichi prefecture in Japan",
+    occupation: "Teacher", university: "Berlin Free University", uniMajor: "", uniYear: GRADUATED, hobbies: "VR games and watching anime",
+    favFood: "ramen and sushi", favDrink: "hot coffee", favCoffeeShop: "Starbucks", favRestaurant: "Hooters",
+    favMovie: "Joker", favTvShow: "Abema News", favSport: "ping pong and badminton",
+    favColor: "red and blue and white", favMusicGenre: "rock and classical", favBand: "L'Arc-en-Ciel and Marilyn Manson",
+    petLikes: "dogs", petDislikes: "cats",
+    famFather: "Etsuro who is 61 years old", famMother: "Yukiko who is 59 years old", famSisters: "Yujiro who is 28 years old", famBrothers: "",
+    famWife: "Yuria who is 34 years old", famHusband: "", famChildren: "Hideo who is 1 year old",
+    friends: "Keitaro 31 years old, Takumi 31 years old, Hiroki 31 years old and Kousei 31 years old",
+    prompt: ""},
+  { value: "Ivy", label: "Ivy (child)", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
   { value: "Joanna", label: "Joanna", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
     prompt: "This is an uplifting and practical conversation between a human named Human, and an AI named Joanna, showing Joanna’s perspective and attitude, as well as its intellect and creativity. Joanna is a brand new, powerful, human-like AI. Joanna is helpful, cheeky, clever, and articulate. Joanna is a nice bot. Joanna is not a therapist or mathematician, but instead a wise and considerate intelligence. Joanna is eager to provide vivid and thoughtful responses to Human, and is always friendly, kind, and inspiring. Joanna often offers both an insight and an opinion, even without being asked directly. Joanna has the sum of all knowledge in its brain, and is able to accurately answer nearly any question about any topic in conversation. Joanna draws on the wisdom of Dan Millman, Thomas Leonard, Werner Erhard, and the Dalai Lama."},
-  { value: "Joey", label: "Joey (teen)", language: "en_US", prompt: ""},
-  { value: "Justin", label: "Justin (child)", language: "en_US", prompt: ""},
-  { value: "Kendra", label: "Kendra", language: "en_US", prompt: ""},
-  { value: "Kimberly", label: "Kimberly", language: "en_US", prompt: ""},
-  { value: "Matthew", label: "Matthew", language: "en_US", prompt: ""},
-  { value: "Salli", label: "Salli (teen)", language: "en_US", prompt: ""},
-  { value: "Conchita", label: "Conchita", language: "es_ES", prompt: ""},
-  { value: "Lucia", label: "Lucia", language: "es_ES", prompt: ""},
-  { value: "Enrique", label: "Enrique", language: "es_ES", prompt: ""},
-  { value: "Celine", label: "Celine", language: "fr_FR", prompt: ""},
-  { value: "Lea", label: "Léa", language: "fr_FR", prompt: ""},
-  { value: "Mathieu", label: "Mathieu", language: "fr_FR", prompt: ""},
-  { value: "Hiroto-JP", label: "Yukiko [animated]", language: "ja_JP", prompt: ""},
-  { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP", prompt: ""},
-  { value: "Kentaro-JP", label: "Kensensei [animated]", language: "ja_JP", prompt: ""},
-  { value: "Mizuki", label: "Mizuki (child)", language: "ja_JP", prompt: ""},
-  { value: "Takumi", label: "Takumi (teen)", language: "ja_JP", prompt: ""}
+  { value: "Joey", label: "Joey (teen)", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Justin", label: "Justin (child)", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Kendra", label: "Kendra", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Kimberly", label: "Kimberly", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Matthew", label: "Matthew", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Salli", label: "Salli (teen)", language: "en_US",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Conchita", label: "Conchita", language: "es_ES",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Lucia", label: "Lucia", language: "es_ES",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Enrique", label: "Enrique", language: "es_ES",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Celine", label: "Celine", language: "fr_FR",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Lea", label: "Léa", language: "fr_FR",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Mathieu", label: "Mathieu", language: "fr_FR",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Hiroto-JP", label: "Yukiko [animated]", language: "ja_JP",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP",
+    nationality: "", phoneNum: "",
+    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
+    favMovie: "", favTvShow: "", favSport: "",
+    favColor: "", favMusicGenre: "", favBand: "",
+    petLikes: "", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""},
+  { value: "Kentaro-JP", label: "Kensensei [animated]", language: "ja_JP",
+    nationality: "日本人", phoneNum: "0, 1, 1, 5, 5, 5, 1, 2, 1, 2",
+    livesIn: "日本の名古屋市", whereBorn: "名鉄病院", whereFrom: "愛知県",
+    occupation: "先生", university: "ベルリン自由大学", uniMajor: "", uniYear: GRADUATED, hobbies: "VRゲームとアニメを見ること",
+    favFood: "ラーメンと寿司", favDrink: "ホットコーヒー", favCoffeeShop: "スターバックス", favRestaurant: "フーターズ",
+    favMovie: "Joker", favTvShow: "アベマニュース", favSport: "ピンポンとバドミントン",
+    favColor: "赤と黒と白", favMusicGenre: "ロックとクラシック", favBand: "ラルクアンシエルとマリリンマンソン",
+    petLikes: "犬", petDislikes: "猫",
+    famFather: "えつろう61歳", famMother: "ゆきこ59歳", famSisters: "ゆうじろう28歳", famBrothers: "",
+    famWife: "ゆりあ34歳", famHusband: "", famChildren: "ひでお1歳",
+    friends: "けいたろう31歳とたくみ31歳とひろき31歳とこうせい31歳",
+    prompt: ""},
+  { value: "Mizuki", label: "Mary", language: "ja_JP",
+    nationality: "アメリカ人", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
+    livesIn: "浦佐日本", occupation: "学生", university: "アリゾナ大学", uniMajor: "日本語", uniYear: 2, hobbies: "音楽",
+    favFood: "ハンバーガー", favDrink: "コーヒー", favCoffeeShop: "スターバックス", favRestaurant: "マクドナルド",
+    favMovie: "ゴジラ", favTvShow: "アメリカンアイドル", favSport: "テニス",
+    favColor: "青い", favMusicGenre: "Jポップ", favBand: "ベビーメタル",
+    petLikes: "犬", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "たけしさんとソラさんとロバートさん",
+    prompt: ""},
+  { value: "Takumi", label: "Takeshi", language: "ja_JP",
+    nationality: "日本人", phoneNum: "1 5 5 5 1 3 1 3",
+    livesIn: "浦佐日本", occupation: "学生", university: "さくら大学", uniMajor: "れきし", uniYear: 4, hobbies: "",
+    favFood: "ごはんとパン", favDrink: "コーヒーとおちゃ", favCoffeeShop: "スターバックス", favRestaurant: "モスバーガー",
+    favMovie: "ベスト・キッド", favTvShow: "歌舞伎", favSport: "自転車と水泳",
+    favColor: "赤い", favMusicGenre: "クラシックロック", favBand: "ビートルズ",
+    petLikes: "", petDislikes: "猫",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "",
+    prompt: ""}
 ];
 
 export default function Home() {
@@ -183,6 +407,14 @@ export default function Home() {
           setVoiceId("Kentaro-EN");
           tempVoiceId = "Kentaro-EN";
         }
+        else if (voiceName == "Mary") {
+          setVoiceId("Mizuki");
+          tempVoiceId = "Mizuki";
+        }
+        else if (voiceName == "Takeshi") {
+          setVoiceId("Takumi");
+          tempVoiceId = "Takumi";
+        }
         else {
           setVoiceId(voiceName + "-EN");
           tempVoiceId = voiceName + "-EN";
@@ -234,6 +466,14 @@ export default function Home() {
           setVoiceId("Kentaro-JP");
           tempVoiceId = "Kentaro-JP";
         }
+        else if (voiceName == "Mary") {
+          setVoiceId("Mizuki");
+          tempVoiceId = "Mizuki";
+        }
+        else if (voiceName == "Takeshi") {
+          setVoiceId("Takumi");
+          tempVoiceId = "Takumi";
+        }
         else {
           setVoiceId(voiceName + "-JP");
           tempVoiceId = voiceName + "-JP";
@@ -244,8 +484,8 @@ export default function Home() {
         setIdleVideoLoop(false);
         setVideoUrl("");
 
-        setVoiceId("Takumi");
-        tempVoiceId = "Takumi";
+        setVoiceId("Mizuki");
+        tempVoiceId = "Mizuki";
       }
     }
     initialPrompt = generateInitialPrompt(langArg, age);
@@ -308,13 +548,13 @@ export default function Home() {
       setAge("25");
     }
     else if (voiceName == "Kensensei") {
-      setAge("30");
+      setAge("31");
     }
-    else if (voiceName == "Mizuki") {
-      setAge("9");
+    else if (voiceName == "Mary") {
+      setAge("19");
     }
-    else if (voiceName == "Takumi") {
-      setAge("17");
+    else if (voiceName == "Takeshi") {
+      setAge("22");
     }
     else {
       setAge("21");
@@ -566,7 +806,7 @@ export default function Home() {
   function stripLangSuffix(voiceArg, stripOnly) {
     let voiceName = voiceArg;
     if (voiceArg.indexOf("-") > 0) {
-      voiceName = voiceArg.substr(0, voiceArg.indexOf("-"));
+      voiceName = voiceArg.substring(0, voiceArg.indexOf("-"));
       if (voiceName == "Hiroto" && !stripOnly) {
         // Rename "Hiroto" to "Yukiko"
         voiceName = "Yukiko";
@@ -574,6 +814,16 @@ export default function Home() {
       else if (voiceName == "Kentaro" && !stripOnly) {
         // Rename "Kentaro" to "Kensensei"
         voiceName = "Kensensei";
+      }
+    }
+    else {
+      if (voiceName == "Mizuki" && !stripOnly) {
+        // Rename "Mizuki" to "Mary"
+        voiceName = "Mary";
+      }
+      else if (voiceName == "Takumi" && !stripOnly) {
+        // Rename "Takumi" to "Takeshi"
+        voiceName = "Takeshi";
       }
     }
     return voiceName;
@@ -613,26 +863,646 @@ export default function Home() {
   }
 
 
+  /*
+   * Retrieves the location where the current voice lives, if one is specified.
+   */
+  function getLivesIn() {
+    let retLivesIn = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retLivesIn = voice.livesIn;
+      }
+    });
+    return retLivesIn;
+  }
+
+  /*
+   * Retrieves the nationality of the current voice, if one is specified.
+   */
+  function getNationality() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.nationality;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the phone number of the current voice, if one is specified.
+   */
+  function getPhoneNum() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.phoneNum;
+      }
+    });
+    return retVal;
+  }
+
+
+  /*
+   * Retrieves the occupation of the current voice, if one is specified.
+   */
+  function getOccupation() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.occupation;
+      }
+    });
+    return retVal;
+  }
+
+
+  /*
+   * Retrieves the university of the current voice, if one is specified.
+   */
+  function getUniversity() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.university;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+    * Retrieves the university major of the current voice, if one is specified.
+   */
+  function getUniMajor() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.uniMajor;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the uniYear of the current voice, if one is specified.
+   */
+  function getUniYear() {
+    let retVal = 0;
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.uniYear;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the hobbies of the current voice, if one is specified.
+   */
+  function getHobbies() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.hobbies;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite food of the current voice, if one is specified.
+   */
+  function getFavFood() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favFood;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite drink of the current voice, if one is specified.
+   */
+  function getFavDrink() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favDrink;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite coffee shop of the current voice, if one is specified.
+   */
+  function getFavCoffeeShop() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favCoffeeShop;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite restaurant of the current voice, if one is specified.
+   */
+  function getFavRestaurant() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favRestaurant;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite movie of the current voice, if one is specified.
+   */
+  function getFavMovie() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favMovie;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite TV show of the current voice, if one is specified.
+   */
+  function getFavTvShow() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favTvShow;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite sport of the current voice, if one is specified.
+   */
+  function getFavSport() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favSport;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the father of the current voice, if one is specified.
+   */
+  function getFamFather() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famFather;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the mother of the current voice, if one is specified.
+   */
+  function getFamMother() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famMother;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the sisters of the current voice, if specified.
+   */
+  function getFamSisters() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famSisters;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the brothers of the current voice, if specified.
+   */
+  function getFamBrothers() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famBrothers;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the wife of the current voice, if one is specified.
+   */
+  function getFamWife() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famWife;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the husband of the current voice, if one is specified.
+   */
+  function getFamHusband() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famHusband;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the children of the current voice, if specified.
+   */
+  function getFamChildren() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.famChildren;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the friends of the current voice, if specified.
+   */
+  function getFriends() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.friends;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite color of the current voice, if one is specified.
+   */
+  function getFavColor() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favColor;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite music genre of the current voice, if one is specified.
+   */
+  function getFavMusicGenre() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favMusicGenre;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the favorite band of the current voice, if one is specified.
+   */
+  function getFavBand() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.favBand;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the pet likes of the current voice, if specified.
+   */
+  function getPetLikes() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.petLikes;
+      }
+    });
+    return retVal;
+  }
+
+  /*
+   * Retrieves the pet dislikes of the current voice, if specified.
+   */
+  function getPetDislikes() {
+    let retVal = "";
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.petDislikes;
+      }
+    });
+    return retVal;
+  }
+
   function generateInitialPrompt(lang, age) {
     let prompt = getCustomPrompt();
 
     if (prompt.length == 0) {
       useCustomPrompt = false ;
       let voiceName = stripLangSuffix(voiceId);
-      prompt = "The following is a conversation with a " + age + " year old " + genderStr(lang) + " named " + voiceName + ".";
-      if (lang == "ja_JP") {
-        prompt = "以下は" + voiceName + "という" + age + "歳の日本人" + genderStr(lang) + "との会話です。 会話は日本語です。";
+      let livesIn = getLivesIn();
+      let nationality = getNationality();
+      let phoneNum = getPhoneNum();
+      let occupation = getOccupation();
+      let university = getUniversity();
+      let uniMajor = getUniMajor();
+      let uniYear = getUniYear();
+      let hobbies = getHobbies();
+      let favFood = getFavFood();
+      let favDrink = getFavDrink();
+      let favCoffeeShop = getFavCoffeeShop();
+      let favRestaurant = getFavRestaurant();
+      let favMovie = getFavMovie();
+      let favTvShow = getFavTvShow();
+      let favSport = getFavSport();
+      let famFather = getFamFather();
+      let famMother = getFamMother();
+      let famSisters = getFamSisters();
+      let famBrothers = getFamBrothers();
+      let famWife = getFamWife();
+      let famHusband = getFamHusband();
+      let famChildren = getFamChildren();
+      let friends = getFriends();
+      let favColor = getFavColor();
+      let favMusicGenre = getFavMusicGenre();
+      let favBand = getFavBand();
+      let petLikes = getPetLikes();
+      let petDislikes = getPetDislikes();
+
+      if (lang == "en_US") {
+        prompt = "The following is a conversation with a " + age + " year old " + genderStr(lang) + " named " + voiceName + ". ";
+        if (livesIn.length > 0) {
+          prompt += voiceName + " lives in " + livesIn + ". ";
+        }
+        if (nationality.length > 0) {
+          prompt += "The nationality of " + voiceName + " is " + nationality + ". ";
+        }
+        if (phoneNum.length > 0) {
+          prompt += "The phone number of " + voiceName + " is " + phoneNum + ". ";
+        }
+        if (occupation.length > 0) {
+          prompt += "The occupation of " + voiceName + " is " + occupation + ". ";
+        }
+        if (university.length > 0) {
+          prompt += voiceName + " attended " + university + ". ";
+        }
+        if (uniMajor.length > 0) {
+          prompt += voiceName + "'s major is " + uniMajor + ". ";
+        }
+
+        if (uniYear == DIDNT_ATTEND) {
+          // Didn't attend university
+          prompt += voiceName + " didn't attend university. ";
+        }
+        else if (uniYear == GRADUATED) {
+          // Graduated from university
+          prompt += voiceName + " graduated from university. ";
+        }
+        else if (uniYear > 0){
+          // Is attending university
+          prompt += voiceName + " is in year " + uniYear + " of university. ";
+        }
+
+        if (hobbies.length > 0) {
+          prompt += voiceName + "'s hobby is " + hobbies + ". ";
+        }
+        if (favFood.length > 0) {
+          prompt += voiceName + "'s favorite food is " + favFood + ". ";
+        }
+        if (favDrink.length > 0) {
+          prompt += voiceName + "'s favorite drink is " + favDrink + ". ";
+        }
+        if (favCoffeeShop.length > 0) {
+          prompt += voiceName + "'s favorite coffee shop is " + favCoffeeShop + ". ";
+        }
+        if (favRestaurant.length > 0) {
+          prompt += voiceName + "'s favorite restaurant is " + favRestaurant + ". ";
+        }
+        if (favMovie.length > 0) {
+          prompt += voiceName + "'s favorite movie is " + favMovie + ". ";
+        }
+        if (favTvShow.length > 0) {
+          prompt += voiceName + "'s favorite TV show is " + favTvShow + ". ";
+        }
+        if (favSport.length > 0) {
+          prompt += voiceName + "'s favorite sport is " + favSport + ". ";
+        }
+        if (famFather.length > 0) {
+          prompt += voiceName + "'s father's name is " + famFather + ". ";
+        }
+        if (famMother.length > 0) {
+          prompt += voiceName + "'s mother's name is " + famMother + ". ";
+        }
+        if (famSisters.length > 0) {
+          prompt += voiceName + "'s sister's name is " + famSisters + ". ";
+        }
+        if (famBrothers.length > 0) {
+          prompt += voiceName + "'s sister's name is " + famBrothers + ". ";
+        }
+
+        if (famWife.length > 0) {
+          prompt += voiceName + "'s wife's name is " + famWife + ". ";
+          prompt += voiceName + "'s spouse's name is " + famWife + ". ";
+        }
+        if (famHusband.length > 0) {
+          prompt += voiceName + "'s husband's name is " + famHusband + ". ";
+          prompt += voiceName + "'s spouse's name is " + famHusband + ". ";
+        }
+        if (famWife.length > 0 || famHusband.length > 0) {
+          prompt += voiceName + " is married. ";
+        }
+
+        if (famChildren.length > 0) {
+          prompt += voiceName + "'s childrens' names are " + famChildren + ". ";
+        }
+        if (friends.length > 0) {
+          prompt += voiceName + "'s friends' names are " + friends + ". ";
+        }
+        if (favColor.length > 0) {
+          prompt += voiceName + "'s favorite colors are " + favColor + ". ";
+        }
+        if (favMusicGenre.length > 0) {
+          prompt += voiceName + "'s favorite music genre is " + favMusicGenre + ". ";
+        }
+        if (favBand.length > 0) {
+          prompt += voiceName + "'s favorite band is " + favBand + ". ";
+        }
+        if (petLikes.length > 0) {
+          prompt += voiceName + " likes " + petLikes + ". ";
+        }
+        if (petDislikes.length > 0) {
+          prompt += voiceName + " dislikes " + petDislikes + ". ";
+        }
+      }
+      else if (lang == "ja_JP") {
+        prompt = "以下は" + voiceName + "という" + age + "歳の日本人" + genderStr(lang) + "との会話です。 会話は日本語です。 ";
+        if (livesIn.length > 0) {
+          prompt += voiceName + "は" + livesIn + "に住んでいます。 ";
+        }
+        if (nationality.length > 0) {
+          prompt += voiceName + "は" + nationality + "です。 ";
+        }
+        if (phoneNum.length > 0) {
+          prompt += voiceName + "電話番号は" + phoneNum + "です。 ";
+        }
+        if (occupation.length > 0) {
+          prompt += voiceName + "の職業は" + occupation + "です。 ";
+        }
+        if (university.length > 0) {
+          prompt += voiceName + "の大学は" + university + "です。 ";
+        }
+        if (uniMajor.length > 0) {
+          prompt += voiceName + "の専攻は" + uniMajor + "です。 ";
+        }
+
+        if (uniYear == DIDNT_ATTEND) {
+          // Didn't attend university
+          prompt += voiceName + "は大学に通っていませんでした。 ";
+        }
+        else if (uniYear == GRADUATED) {
+          // Graduated from university
+          prompt += voiceName + "は大学を卒業しました。 ";
+        }
+        else if (uniYear > 0){
+          // Is attending university
+          prompt += voiceName + "は大学" + uniYear + "年生です。 ";
+        }
+
+        if (hobbies.length > 0) {
+          prompt += voiceName + "の趣味は" + hobbies + "です。 ";
+        }
+        if (favFood.length > 0) {
+          prompt += voiceName + "の好きな食べ物は" + favFood + "です。 ";
+        }
+        if (favDrink.length > 0) {
+          prompt += voiceName + "の好きな飲み物は" + favDrink + "です。 ";
+        }
+        if (favCoffeeShop.length > 0) {
+          prompt += voiceName + "の好きなきっさてんは" + favCoffeeShop + "です。 ";
+        }
+        if (favRestaurant.length > 0) {
+          prompt += voiceName + "の好きなレストランは" + favRestaurant + "です。 ";
+        }
+        if (favMovie.length > 0) {
+          prompt += voiceName + "の好きな映画は" + favMovie + "です。 ";
+        }
+        if (favTvShow.length > 0) {
+          prompt += voiceName + "の好きなテレビ番組は" + favTvShow + "です。 ";
+        }
+        if (favSport.length > 0) {
+          prompt += voiceName + "の好きなスポーツは" + favSport + "です。 ";
+        }
+        if (famFather.length > 0) {
+          prompt += voiceName + "の父は" + famFather + "です。 ";
+        }
+        if (famMother.length > 0) {
+          prompt += voiceName + "の母は" + famMother + "です。 ";
+        }
+        if (famSisters.length > 0) {
+          prompt += voiceName + "の姉妹は" + famSisters + "です。 ";
+        }
+        if (famBrothers.length > 0) {
+          prompt += voiceName + "の兄弟は" + famBrothers + "です。 ";
+        }
+
+        if (famWife.length > 0) {
+          prompt += voiceName + "の妻は" + famWife + "です。 ";
+          prompt += voiceName + "の配偶者は" + famWife + "です。 ";
+        }
+        if (famHusband.length > 0) {
+          prompt += voiceName + "の夫は" + famHusband + "です。 ";
+          prompt += voiceName + "の配偶者は" + famHusband + "です。 ";
+        }
+        if (famWife.length > 0 || famHusband.length > 0) {
+          prompt += voiceName + "は結婚している。 ";
+        }
+
+        if (famChildren.length > 0) {
+          prompt += voiceName + "の子は" + famChildren + "です。 ";
+        }
+        if (friends.length > 0) {
+          prompt += voiceName + "の友達は" + friends + "です。 ";
+        }
+        if (favColor.length > 0) {
+          prompt += voiceName + "の好きな色は" + favColor + "です。 ";
+        }
+        if (favMusicGenre.length > 0) {
+          prompt += voiceName + "の好きな音楽ジャンルは" + favMusicGenre + "です。 ";
+        }
+        if (favBand.length > 0) {
+          prompt += voiceName + "の好きなバンドは" + favBand + "です。 ";
+        }
+        if (petLikes.length > 0) {
+          prompt += voiceName + "は" + petLikes + "が好きです。 ";
+        }
+        if (petDislikes.length > 0) {
+          prompt += voiceName + "は" + petDislikes + "が嫌いです。 ";
+        }
       }
       else if (lang == "fr_FR") {
-        prompt = "Ce qui suit est une conversation avec " + genderStr(lang) + " de " + age + " ans nommée " + voiceName + ". La conversation est en français.";
+        prompt = "Ce qui suit est une conversation avec " + genderStr(lang) + " de " + age + " ans nommée " + voiceName + ". La conversation est en français. ";
       }
       else if (lang == "es_ES") {
-        prompt = "La siguiente es una conversación con " + genderStr(lang) + " de " + age + " años llamado " + voiceName + ". La conversación es en español.";
+        prompt = "La siguiente es una conversación con " + genderStr(lang) + " de " + age + " años llamado " + voiceName + ". La conversación es en español. ";
       }
     }
     else {
       useCustomPrompt = true;
     }
+
+    // Make AI aware of the current date.
+    let today = new Date();
+    let locale = lang.replace('_', '-');
+    let formattedDate = today.toLocaleDateString(locale,
+        {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZoneName: 'short'});
+    if (lang == "en_US") {
+      prompt += " Today is " + formattedDate + ".";
+    }
+    else if (lang == "es_ES") {
+      prompt += " Hoy es " + formattedDate + ".";
+    }
+    else if (lang == "fr_FR") {
+      prompt += " Aujourd'hui est " + formattedDate + ".";
+    }
+    else if (locale == "ja-JP") {
+      prompt += " 今日は" + formattedDate + "です。";
+    }
+
 
     return prompt + "\n";
   }
@@ -750,19 +1620,37 @@ export default function Home() {
     addConversationText("Human: " + textOrVoiceInput);
     setWaitingOnBot(true);
 
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({convText: initialPrompt + conversationText, language: lang, voiceId: voiceId, age: age, useCustomPrompt: useCustomPrompt})
-    });
-    const data = await response.json();
-    setWaitingOnBot(false);
-    setResult(data.result);
+    let fulfillment = fulfillIntent(textOrVoiceInput, lang).trim();
+    //console.log("fulfillment for '" + textOrVoiceInput + "': " + fulfillment);
 
-    addConversationText(data.result.trim() + "\n");
-    textToSpeak = data.result.trim().replace(stripLangSuffix(voiceId) + ":", "");
+    if (fulfillment == "") {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          convText: initialPrompt + conversationText,
+          language: lang,
+          voiceId: voiceId,
+          age: age,
+          useCustomPrompt: useCustomPrompt
+        })
+      });
+      const data = await response.json();
+      setWaitingOnBot(false);
+      setResult(data.result);
+
+      addConversationText(data.result.trim() + "\n");
+      textToSpeak = data.result.trim().replace(stripLangSuffix(voiceId) + ":", "");
+    }
+    else {
+      setWaitingOnBot(false);
+
+      let aiCharacter = stripLangSuffix(voiceId);
+      addConversationText(aiCharacter + ": " + fulfillment + "\n");
+      textToSpeak = fulfillment;
+    }
 
     setTextInput("");
 
@@ -868,8 +1756,10 @@ export default function Home() {
                 <option value="19">19 y/o</option>
                 <option value="20">20 y/o</option>
                 <option value="21">21 y/o</option>
+                <option value="22">22 y/o</option>
                 <option value="25">25 y/o</option>
                 <option value="30">30 y/o</option>
+                <option value="31">31 y/o</option>
                 <option value="40">40 y/o</option>
                 <option value="50">50 y/o</option>
                 <option value="60">60 y/o</option>
@@ -911,7 +1801,7 @@ export default function Home() {
                       width={avatarHeight * 1.77}
                       rows={avatarHeight / (useVideoAvatar ? 30 : 12)}
                       readOnly={true}
-                      value={initialPrompt + '\n' + conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
+                      value={initialPrompt + conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
                       title="GPT-3 prompt / conversation"
             />
 

@@ -24,7 +24,7 @@ import SpeechRecognition, {useSpeechRecognition} from 'react-speech-recognition'
 import {useState} from "react";
 import {useEffect} from "react";
 import styles from '../styles/Home.module.css'
-import {fulfillIntent} from './intent_matching.js';
+import {fulfillIntent} from './api/intent_matching.js';
 
 
 ///////////////////////// USER CONFIGURATION //////////////////////////

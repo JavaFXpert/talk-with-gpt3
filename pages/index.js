@@ -1801,7 +1801,7 @@ export default function Home() {
                       width={avatarHeight * 1.77}
                       rows={avatarHeight / (useVideoAvatar ? 30 : 12)}
                       readOnly={true}
-                      value={initialPrompt + conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
+                      value={conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
                       title="GPT-3 prompt / conversation"
             />
 

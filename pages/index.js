@@ -92,6 +92,17 @@ const voiceOptions = [
     famWife: "Yuria who is 34 years old", famHusband: "", famChildren: "Hideo who is 1 year old",
     friends: "Keitaro 31 years old, Takumi 31 years old, Hiroki 31 years old and Kousei 31 years old",
     prompt: ""},
+  { value: "Mary-EN", label: "Mary [animated]", language: "en_US",
+    nationality: "American", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
+    livesIn: "Urasa Japan", occupation: "student", university: "Arizona University", uniMajor: "Japanese language", uniYear: 2, hobbies: "music",
+    favFood: "hamburgers", favDrink: "coffee", favCoffeeShop: "Starbucks", favRestaurant: "McDonalds",
+    favMovie: "Godzilla", favTvShow: "American Idol", favSport: "tennis",
+    favColor: "blue", favMusicGenre: "J-Pop", favBand: "Baby Metal",
+    petLikes: "dogs", petDislikes: "",
+    famFather: "", famMother: "", famSisters: "", famBrothers: "",
+    famWife: "", famHusband: "", famChildren: "",
+    friends: "Takeshi, Sora, and Robert",
+    prompt: ""},
   { value: "Ivy", label: "Ivy (child)", language: "en_US",
     nationality: "", phoneNum: "",
     livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
@@ -280,7 +291,7 @@ const voiceOptions = [
     famWife: "ゆりあ34歳", famHusband: "", famChildren: "ひでお1歳",
     friends: "けいたろう31歳とたくみ31歳とひろき31歳とこうせい31歳",
     prompt: ""},
-  { value: "Mizuki", label: "Mary", language: "ja_JP",
+  { value: "Mary-JP", label: "Mary [animated]", language: "ja_JP",
     nationality: "アメリカ人", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
     livesIn: "浦佐日本", occupation: "学生", university: "アリゾナ大学", uniMajor: "日本語", uniYear: 2, hobbies: "音楽",
     favFood: "ハンバーガー", favDrink: "コーヒー", favCoffeeShop: "スターバックス", favRestaurant: "マクドナルド",
@@ -291,7 +302,7 @@ const voiceOptions = [
     famWife: "", famHusband: "", famChildren: "",
     friends: "たけしさんとソラさんとロバートさん",
     prompt: ""},
-  { value: "Takumi", label: "Takeshi", language: "ja_JP",
+  { value: "Takeshi-JP", label: "Takeshi [animated]", language: "ja_JP",
     nationality: "日本人", phoneNum: "1 5 5 5 1 3 1 3",
     livesIn: "浦佐日本", occupation: "学生", university: "さくら大学", uniMajor: "れきし", uniYear: 4, hobbies: "",
     favFood: "ごはんとパン", favDrink: "コーヒーとおちゃ", favCoffeeShop: "スターバックス", favRestaurant: "モスバーガー",
@@ -301,7 +312,29 @@ const voiceOptions = [
     famFather: "", famMother: "", famSisters: "", famBrothers: "",
     famWife: "", famHusband: "", famChildren: "",
     friends: "",
-    prompt: ""}
+    prompt: ""},
+  // { value: "Mizuki", label: "Mary", language: "ja_JP",
+  //   nationality: "アメリカ人", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
+  //   livesIn: "浦佐日本", occupation: "学生", university: "アリゾナ大学", uniMajor: "日本語", uniYear: 2, hobbies: "音楽",
+  //   favFood: "ハンバーガー", favDrink: "コーヒー", favCoffeeShop: "スターバックス", favRestaurant: "マクドナルド",
+  //   favMovie: "ゴジラ", favTvShow: "アメリカンアイドル", favSport: "テニス",
+  //   favColor: "青い", favMusicGenre: "Jポップ", favBand: "ベビーメタル",
+  //   petLikes: "犬", petDislikes: "",
+  //   famFather: "", famMother: "", famSisters: "", famBrothers: "",
+  //   famWife: "", famHusband: "", famChildren: "",
+  //   friends: "たけしさんとソラさんとロバートさん",
+  //   prompt: ""},
+  // { value: "Takumi", label: "Takeshi", language: "ja_JP",
+  //   nationality: "日本人", phoneNum: "1 5 5 5 1 3 1 3",
+  //   livesIn: "浦佐日本", occupation: "学生", university: "さくら大学", uniMajor: "れきし", uniYear: 4, hobbies: "",
+  //   favFood: "ごはんとパン", favDrink: "コーヒーとおちゃ", favCoffeeShop: "スターバックス", favRestaurant: "モスバーガー",
+  //   favMovie: "ベスト・キッド", favTvShow: "歌舞伎", favSport: "自転車と水泳",
+  //   favColor: "赤い", favMusicGenre: "クラシックロック", favBand: "ビートルズ",
+  //   petLikes: "", petDislikes: "猫",
+  //   famFather: "", famMother: "", famSisters: "", famBrothers: "",
+  //   famWife: "", famHusband: "", famChildren: "",
+  //   friends: "",
+  //   prompt: ""}
 ];
 
 export default function Home() {
@@ -387,12 +420,13 @@ export default function Home() {
     let voiceName = stripLangSuffix(voiceId);
     let tempVoiceId = "Unknown";
     if (langArg == "en_US") {
-      if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei") {
+      if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei" ||
+          voiceName == "Mary") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
 
-        if (voiceName == "Kensensei") {
+        if (voiceName == "Kensensei" || voiceName == "Mary") {
           setUseVideoBackground(false);
         }
         else {
@@ -408,12 +442,8 @@ export default function Home() {
           tempVoiceId = "Kentaro-EN";
         }
         else if (voiceName == "Mary") {
-          setVoiceId("Mizuki");
-          tempVoiceId = "Mizuki";
-        }
-        else if (voiceName == "Takeshi") {
-          setVoiceId("Takumi");
-          tempVoiceId = "Takumi";
+          setVoiceId("Mary-EN");
+          tempVoiceId = "Mary-EN";
         }
         else {
           setVoiceId(voiceName + "-EN");
@@ -446,12 +476,13 @@ export default function Home() {
       tempVoiceId = "Celine";
     }
     else if (langArg == "ja_JP") {
-      if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei") {
+      if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei" ||
+          voiceName == "Mary" || voiceName == "Takeshi") {
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
 
-        if (voiceName == "Kensensei") {
+        if (voiceName == "Kensensei" || voiceName == "Mary" || voiceName == "Takeshi") {
           setUseVideoBackground(false);
         }
         else {
@@ -467,12 +498,12 @@ export default function Home() {
           tempVoiceId = "Kentaro-JP";
         }
         else if (voiceName == "Mary") {
-          setVoiceId("Mizuki");
-          tempVoiceId = "Mizuki";
+          setVoiceId("Mary-JP");
+          tempVoiceId = "Mary-JP";
         }
         else if (voiceName == "Takeshi") {
-          setVoiceId("Takumi");
-          tempVoiceId = "Takumi";
+          setVoiceId("Takeshi-JP");
+          tempVoiceId = "Takeshi-JP";
         }
         else {
           setVoiceId(voiceName + "-JP");
@@ -499,12 +530,13 @@ export default function Home() {
     //TODO: Handle in a non-hardcoded way
     //TODO: Factor out common code in this and handleLanguageChange()
     let voiceName = stripLangSuffix(voiceIdArg);
-    if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei") {
+    if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei" ||
+        voiceName == "Mary" || voiceName == "Takeshi") {
       setUseVideoAvatar(true);
       setIdleVideoLoop(true);
       setVideoUrl(`videos/${voiceName}.mov`);
 
-      if (voiceName == "Kensensei") {
+      if (voiceName == "Kensensei" || voiceName == "Mary" || voiceName == "Takeshi") {
         setUseVideoBackground(false);
       }
       else {
@@ -816,22 +848,23 @@ export default function Home() {
         voiceName = "Kensensei";
       }
     }
-    else {
-      if (voiceName == "Mizuki" && !stripOnly) {
-        // Rename "Mizuki" to "Mary"
-        voiceName = "Mary";
-      }
-      else if (voiceName == "Takumi" && !stripOnly) {
-        // Rename "Takumi" to "Takeshi"
-        voiceName = "Takeshi";
-      }
-    }
+    // else {
+    //   if (voiceName == "Mizuki" && !stripOnly) {
+    //     // Rename "Mizuki" to "Mary"
+    //     voiceName = "Mary";
+    //   }
+    //   else if (voiceName == "Takumi" && !stripOnly) {
+    //     // Rename "Takumi" to "Takeshi"
+    //     voiceName = "Takeshi";
+    //   }
+    // }
     return voiceName;
   } //stripLangSuffix
 
 
   function genderStr(lang) {
-    let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro-EN', 'Masahiro-JP', 'Kentaro-EN', 'Kentaro-JP', 'Mathieu', 'Matthew', 'Takumi'];
+    let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro-EN', 'Masahiro-JP',
+      'Kentaro-EN', 'Kentaro-JP', 'Mathieu', 'Matthew', 'Takeshi-JP', 'Takumi'];
     let retGenderStr = "";
     if (lang == "ja_JP") {
       retGenderStr = males.includes(voiceId) ? '男性' : '女性';
@@ -1674,6 +1707,26 @@ export default function Home() {
     setTextInput("");
   }
 
+  function voiceId2Poster(voiceId) {
+    let retPoster = "";
+    if (voiceId.startsWith("Masahiro")) {
+      retPoster = "Masahiro.png";
+    }
+    else if (voiceId.startsWith("Kentaro")) {
+      retPoster = "Kensensei.png";
+    }
+    else if (voiceId.startsWith("Hiroto")) {
+      retPoster = "Yukiko.png";
+    }
+    else if (voiceId.startsWith("Mary")) {
+      retPoster = "Mary.png";
+    }
+    else if (voiceId.startsWith("Takeshi")) {
+      retPoster = "Takeshi.png";
+    }
+    return retPoster;
+  }
+
   return (
       <div>
         <Head>
@@ -1785,7 +1838,7 @@ export default function Home() {
                        onPlay={e => {if (!idleVideoLoop) {handleStopListenClick()}}}
                        onEnded={e => handleListenClick()}
                        src={videoUrl}
-                       poster={voiceId.startsWith("Masahiro") ? "Masahiro.png" : (voiceId.startsWith("Kentaro") ? "Kensensei.png" : "Yukiko.png")}
+                       poster={voiceId2Poster(voiceId)}
                 />
                 <video height={avatarHeight}
                        width={avatarHeight * 0.443}

@@ -38,7 +38,7 @@ Follow the instructions below to try the **Talk w/GPT-3** application out for yo
    $ cp .env.example .env
    ```
 
-6. Add your OpenAI [API key](https://beta.openai.com/account/api-keys) to the newly created `.env` file
+6. Add your OpenAI [API key](https://beta.openai.com/account/api-keys) and SerpApi [key](https://serpapi.com/manage-api-key) to the newly created `.env` file
 
 7. Add your [Amazon Polly](https://aws.amazon.com/polly/) keys, and optionally your [Ex-Human](https://exh.ai/) token, to the app. This will require editing the following file:
 
@@ -169,6 +169,24 @@ Questions such as "What day was it yesterday?", "¿Que día fue ayer?", "Quel jo
 
 Questions in this category rely solely on GPT-3 and the fact that whenever an AI character appears, part of its GPT-3 prompt is the current date.
 
+### AI character's access to the web (alpha feature)
+
+AI characters need to get fresh info from the web when needed. For example, questions such as "Who is currently the King of England", and "How old is Armin van Buuren" require current answers from the web, rather than relying on stale information from GPT-3 model training. There are at least three approaches for addressing this:
+
+- SerpApi https://serpapi.com/
+- Andi Search https://andisearch.com/
+- WebGPT https://openai.com/blog/webgpt/
+
+The current implementation (22 Sep 2022) of Talk w/GPT-3 leverages SerpAPI, because the other two weren't available to the public at that time. One of the tricky parts of this approach is to retain context in the conversation when asking for info from the web. For example:
+
+`Human: who is the most popular cartoon mouse`
+`Matthew: The most popular cartoon mouse is undoubtedly Mickey Mouse. He's been around for almost a century and is beloved by people of all ages.`
+
+`Human: how old is he`
+`Matthew: 93 years old`
+
+The latter question is turned into "how old is Mickey Mouse?" before asking the web.
+
 ### OpenAI GPT-3 prompt and parameters used 
 
 As discussed earlier, the prompt sent to the GPT-3 completions API is what is seen in the application's conversation text area. The GPT-3 parameters set by this application are as follows:
@@ -179,8 +197,8 @@ prompt: req.body.convText,
 temperature: 0.9,
 frequency_penalty: 1.5,
 presence_penalty: 0.6,
-max_tokens: 40,
-stop: ["\nHuman:"]
+max_tokens: 50,
+stop: ["\nHuman:", "\nText:"]
 ```
 
 You may supply a custom prompt to a given AI character by editing the `voiceOptions` JSON in the `pages/index.js` file, replacing the empty string with your prompt. As shown in the following example, Joanna's prompt is currently similar to one that [Dr. Alan D. Thompson prescribed for his GPT-3 Leta AI project](https://lifearchitect.ai/leta/).

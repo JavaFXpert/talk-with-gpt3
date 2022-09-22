@@ -188,6 +188,8 @@ The current implementation (22 Sep 2022) of Talk w/GPT-3 leverages SerpAPI, beca
 
 The latter question is turned into "how old is Mickey Mouse?" before asking the web.
 
+Also, GPT-3 isn't always the most accurate with math calculations, so the web is leveraged for some calculations.
+
 ### OpenAI GPT-3 prompt and parameters used 
 
 As discussed earlier, the prompt sent to the GPT-3 completions API is what is seen in the application's conversation text area. The GPT-3 parameters set by this application are as follows:

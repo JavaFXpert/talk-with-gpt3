@@ -17,7 +17,7 @@
 // TODO: Find out how to share INTENT constants
 
 import {getTimeZoneStr} from './time_zones.js';
-import {composeQuestionFromConversation, correctStandardLanguage} from '../conversationContext.js';
+import {composeQuestionFromConversation, correctStandardLanguage} from './conversationContext.js';
 import {getTemporalStr} from "./temporal";
 
 const ASK_FOR_CURRENT_INFO_INTENT = 'AskForCurrentInfoIntent';

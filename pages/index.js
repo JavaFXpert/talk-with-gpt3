@@ -16,6 +16,9 @@
 
 //TODO: Put ages in the voiceOptions hashmap
 //TODO: Externalize the AI avatar configuration
+//TODO: Add metadata to Takeshi, etc.
+//TODO: Recover from Ex-Human errors
+//TODO: Add new AI character voice to Japanese, making it first choice
 
 const AWS = require('aws-sdk')
 
@@ -25,6 +28,7 @@ import {useState} from "react";
 import {useEffect} from "react";
 import styles from '../styles/Home.module.css'
 import {fulfillIntent} from './api/intent_matching.js';
+import {getTemporalStr} from "./api/temporal.js";
 
 
 ///////////////////////// USER CONFIGURATION //////////////////////////
@@ -1653,8 +1657,15 @@ export default function Home() {
     addConversationText("Human: " + textOrVoiceInput);
     setWaitingOnBot(true);
 
-    let fulfillment = fulfillIntent(textOrVoiceInput, lang).trim();
-    //console.log("fulfillment for '" + textOrVoiceInput + "': " + fulfillment);
+    // Try out temporal.js
+    let fulfillment = getTemporalStr(textOrVoiceInput, lang);
+    console.log("$$$$$Temporal string: " + fulfillment);
+
+    if (fulfillment == "") {
+      fulfillment = await fulfillIntent(textOrVoiceInput, lang, conversationText);
+      fulfillment = fulfillment.trim();
+      console.log("fulfillment for '" + textOrVoiceInput + "': " + fulfillment);
+    }
 
     if (fulfillment == "") {
       const response = await fetch("/api/generate", {
@@ -1664,10 +1675,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           convText: initialPrompt + conversationText,
-          language: lang,
-          voiceId: voiceId,
-          age: age,
-          useCustomPrompt: useCustomPrompt
+          useCustomPrompt: useCustomPrompt,
+          hallucinateIntent: false
         })
       });
       const data = await response.json();
@@ -1698,7 +1707,6 @@ export default function Home() {
 
     const textarea = document.getElementById("conversation");
     textarea.scrollTop = textarea.scrollHeight;
-
   }
 
   async function onSubmit(event) {

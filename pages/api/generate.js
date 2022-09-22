@@ -22,17 +22,26 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export default async function (req, res) {
-  let compConvText = req.body.convText + "\n" + req.body.voiceId + ":";
-
+  let temperature = 0.9;
+  let frequencyPenalty = 1.5;
+  let presencePenalty = 0.6;
+  let stopSequences = ["\nHuman:", "\nText:"];
+  if (req.body.hallucinateIntent || req.body.hallucinateSubject ||
+      req.body.correctStandardLang || req.body.composeQuestion) {
+    temperature = 0.0;
+    frequencyPenalty = 0.0;
+    presencePenalty = 0.0;
+    console.log("req.body.convText:" + req.body.convText);
+  }
   const completion = await openai.createCompletion({
     model: req.body.useCustomPrompt ? "davinci" : "text-davinci-002",
     prompt: req.body.convText,
-    temperature: 0.7,
-    frequency_penalty: 1.5,
-    presence_penalty: 0.6,
-    max_tokens: 110,
-    stop: ["\nHuman:"]
-    //stop: ["\nHuman:", "\n" + req.body.voiceId + ":"]
+    temperature: temperature ? 0.0 : 0.9,
+    frequency_penalty: frequencyPenalty ? 0.0 : 1.5,
+    presence_penalty: presencePenalty ? 0.0 : 0.6,
+    max_tokens: 50,
+    // stop: req.body.hallucinateIntent ? ["\nHuman:"] : ["\nText:"]
+    stop: stopSequences
   });
   res.status(200).json({ result: completion.data.choices[0].text});
 }

@@ -14,53 +14,65 @@
  * limitations under the License.
  */
 
-import {getTimeZoneStr} from './time_zones.js';
+// TODO: Find out how to share INTENT constants
 
+import {getTimeZoneStr} from './time_zones.js';
+import {composeQuestionFromConversation, correctStandardLanguage} from '../conversationContext.js';
+import {getTemporalStr} from "./temporal";
+
+const ASK_FOR_CURRENT_INFO_INTENT = 'AskForCurrentInfoIntent';
 const ASK_DATE_INTENT = 'AskDateIntent';
 const ASK_TIME_INTENT = 'AskTimeIntent';
 const ASK_DAY_INTENT = 'AskDayIntent';
 const ASK_MONTH_INTENT = 'AskMonthIntent';
+const ASK_TEMPERATURE_INTENT = 'AskTemperatureIntent';
 const ASK_WEATHER_INTENT = 'AskWeatherIntent';
+const ASK_NEWS_INTENT = 'AskNewsIntent';
+const ASK_STOCK_PRICE_INTENT = 'AskStockPriceIntent';
+const ASK_POPULATION_INTENT = 'AskPopulationIntent';
+const ASK_AGE_INTENT = 'AskAgeIntent';
+const ASK_FULL_MOON_INTENT = 'AskFullMoonIntent';
+const ASK_DISTANCE_INTENT = 'AskDistanceIntent';
+const ASK_TRAVEL_TIME_INTENT = 'AskTravelTimeIntent';
+const ASK_BUSINESS_INTENT = 'AskBusinessIntent';
+const CALCULATE_INTENT = 'CalculateIntent';
 
 let intentArg = "";
 
 // Key entries must be lowercase
 const intentsMap = {
-  "what's today's date": ASK_DATE_INTENT, //en-US
-  "what's the date today": ASK_DATE_INTENT, //en-US
-  "what date is it": ASK_DATE_INTENT, //en-US
-  "what's the date": ASK_DATE_INTENT, //en-US
-  "cuál es la fecha de hoy": ASK_DATE_INTENT, //es-ES
-  "qué fecha es": ASK_DATE_INTENT, //es-ES
-  "quelle date est-il": ASK_DATE_INTENT, //fr-FR
-  "quelle est la date d'aujourd'hui": ASK_DATE_INTENT, //fr-FR
-  "今日は何日ですか": ASK_DATE_INTENT, //ja-JP
-  "何日ですか": ASK_DATE_INTENT, //ja-JP
-
-  "what time is it": ASK_TIME_INTENT, // en-US
-  "qué hora es": ASK_TIME_INTENT, //es-ES
-  "qué hora es en este momento": ASK_TIME_INTENT, //es-ES
-  "quelle heure est-il": ASK_TIME_INTENT, //fr-FR
-  "今何時ですか": ASK_TIME_INTENT, //ja-JP
-
-  "what day of the week is it": ASK_DAY_INTENT, //en-US
-  "what day is it": ASK_DAY_INTENT, //en-US
-  "cuál es el día de la semana": ASK_DAY_INTENT, //es-ES
-  "qué día de la semana es": ASK_DAY_INTENT, //es-ES
-  "qué día es": ASK_DAY_INTENT, //es-ES
-  "quel jour est-il": ASK_DAY_INTENT, //fr-FR
-  "quelle est le jour de la semaine": ASK_DAY_INTENT, //fr-FR
-  "quel jour de la semaine est-il": ASK_DAY_INTENT, //
-  "今日は何曜日ですか": ASK_DAY_INTENT, //ja-JP
-  "何曜日ですか": ASK_DAY_INTENT, //ja-JP
-
-  "what month is it": ASK_MONTH_INTENT, //en-US
-  "cuál es el mes": ASK_MONTH_INTENT, //es-ES
-  "qué mes es": ASK_MONTH_INTENT, //es-ES
-  "quelle est le mois": ASK_MONTH_INTENT, //fr-FR
-  "quel mois est-il": ASK_MONTH_INTENT, //fr-FR
-  "今月は何月ですか": ASK_MONTH_INTENT, //ja-JP
-  "何月ですか": ASK_MONTH_INTENT, //ja-JP
+  "get-date": ASK_DATE_INTENT,
+  "get-time": ASK_TIME_INTENT,
+  "get-day-of-week": ASK_DAY_INTENT,
+  "get-month": ASK_MONTH_INTENT,
+  "get-population": ASK_POPULATION_INTENT,
+  "get-age": ASK_AGE_INTENT,
+  "get-temperature": ASK_TEMPERATURE_INTENT,
+  "get-weather": ASK_WEATHER_INTENT,
+  "get-forecast": ASK_WEATHER_INTENT,
+  "get-weather-forecast": ASK_WEATHER_INTENT,
+  "get-weather-yesterday": ASK_WEATHER_INTENT,
+  "get-weather-tomorrow": ASK_WEATHER_INTENT,
+  "get-news": ASK_NEWS_INTENT,
+  "get-headlines": ASK_NEWS_INTENT,
+  "get-top-headlines": ASK_NEWS_INTENT,
+  "get-stock-price": ASK_STOCK_PRICE_INTENT,
+  "get-next-full-moon": ASK_FULL_MOON_INTENT,
+  "get-last-full-moon": ASK_FULL_MOON_INTENT,
+  "get-full-moon": ASK_FULL_MOON_INTENT,
+  "get-math": CALCULATE_INTENT,
+  "get-math-result": CALCULATE_INTENT,
+  "calculate": CALCULATE_INTENT,
+  "get-factorial": CALCULATE_INTENT,
+  "get-square-root": CALCULATE_INTENT,
+  "get-cube-root": CALCULATE_INTENT,
+  "get-distance": ASK_DISTANCE_INTENT,
+  "get-travel-time": ASK_TRAVEL_TIME_INTENT,
+  "get-flight-time": ASK_TRAVEL_TIME_INTENT,
+  "get-drive-time": ASK_TRAVEL_TIME_INTENT,
+  "get-driving-time": ASK_TRAVEL_TIME_INTENT,
+  "get-restaurants": ASK_BUSINESS_INTENT,
+  "find-restaurants": ASK_BUSINESS_INTENT,
 }
 
 function stripFinalPunctuation(str) {
@@ -76,268 +88,190 @@ function stripFinalPunctuation(str) {
   return retStr;
 }
 
-function matchIntent(intentRequest, locale) {
+async function matchIntent(intentRequest, locale) {
   intentArg = "";
   let cleanedIntentReq = stripFinalPunctuation(intentRequest).trim();
-  let matchedIntent = intentsMap[cleanedIntentReq.toLowerCase()];
+
+  // Try to match the intent by using an intent result from GPT
+  let intentPrompt = "Convert this text to a short intent.\n" +
+      "\n" +
+      "Text: What is the capital of Ohio?\n" +
+      "Intent: get-capital Ohio\n" +
+      "\n" +
+      "Human: What is the population of Indianapolis \n" +
+      "Intent: get-population Indianapolis\n" +
+      "\n" +
+      "Human: What time is it?\n" +
+      "Intent: get-time\n" +
+      "\n" +
+      "Human: What is today's date?\n" +
+      "Intent: get-date\n" +
+      "\n" +
+      "Human: How old is Huey Lewis?\n" +
+      "Intent: get-age Huey Lewis\n" +
+      "\n" +
+      "Human: What time is it in Cambodia?\n" +
+      "Intent: get-time Cambodia\n" +
+      "\n" +
+      "Human: What day is it?\n" +
+      "Intent: get-day\n" +
+      "\n" +
+      "Human: What day is it in Perth?\n" +
+      "Intent: get-day Perth\n" +
+      "\n" +
+      "Human: Let's play checkers.\n" +
+      "Intent: play-checkers\n" +
+      "\n" +
+      "Human: Please tell me how many people live in Indianapolis\n" +
+      "Intent: get-population Indianapolis\n" +
+      "\n" +
+      "Human: What's the weather forecast?\n" +
+      "Intent: get-weather\n" +
+      "\n" +
+      "Human: How hot is it outside?\n" +
+      "Intent: get-temperature\n" +
+      "\n" +
+      "Human: In what time zone is Sydney Australia?\n" +
+      "Intent: get-timezone Sydney Australia\n" +
+      "\n" +
+      "Human: What is the current price of Microsoft stock?\n" +
+      "Intent: get-stock-price MSFT\n" +
+      "\n" +
+      "Human: What is the price of Disney?\n" +
+      "Intent: get-stock-price DIS\n" +
+      "\n" +
+      "Human: What should I wear today?\n" +
+      "Intent: get-weather\n" +
+      "\n" +
+      "Human:";
+
+  const responseIntent = await fetch("/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      convText: intentPrompt + cleanedIntentReq + "\nIntent:",
+      useCustomPrompt: false,
+      hallucinateIntent: true
+    })
+  });
+  const dataIntent = await responseIntent.json();
+  let intentList = dataIntent.result.trim().split(" ");
+  console.log("intentList:" + intentList);
+
+  let matchedIntent = intentsMap[intentList[0].toLowerCase()];
   if (matchedIntent) {
+    console.log(intentList[0] + " matched, matchedIntent: " + matchedIntent);
+    if (intentList.length > 1) {
+      // Intent matched but there are intent arguments
+      intentList.shift();
+      intentArg = intentList.join(" ");
+      console.log("intentArg:" + intentArg);
+    }
     return matchedIntent;
   }
-  else {
-    let dateSearchStrA = '';
-    let dateSearchStrB = '';
-    let timeSearchStrA = '';
-    let timeSearchStrB = '';
-    if (locale == 'en-US') {
-      dateSearchStrA = "what date is it ";
-      dateSearchStrB = "what's the date ";
-      timeSearchStrA = "what time is it ";
-      if (cleanedIntentReq.toLowerCase().startsWith(dateSearchStrA)) {
-        // User is asking for the date in a specific location
-        intentArg = cleanedIntentReq.substring(dateSearchStrA.length);
-        return ASK_DATE_INTENT;
-      }
-      else if (cleanedIntentReq.toLowerCase().startsWith(dateSearchStrB)) {
-        // User is asking for the date in a specific location
-        intentArg = cleanedIntentReq.substring(dateSearchStrB.length);
-        return ASK_DATE_INTENT;
-      }
-      else if (cleanedIntentReq.toLowerCase().startsWith(timeSearchStrA)) {
-        // User is asking for the time in a specific location
-        intentArg = cleanedIntentReq.substring(timeSearchStrA.length);
-        return ASK_TIME_INTENT;
-      }
-    }
-    else if (locale == 'es-ES') {
-      dateSearchStrA = "cuál es la fecha de hoy ";
-      dateSearchStrB = "que fecha es ";
-      timeSearchStrA = 'qué hora es ';
-      if (cleanedIntentReq.toLowerCase().startsWith(dateSearchStrA)) {
-        // User is asking for the date in a specific location
-        intentArg = cleanedIntentReq.substring(dateSearchStrA.length);
-        return ASK_DATE_INTENT;
-      }
-      else if (cleanedIntentReq.toLowerCase().startsWith(dateSearchStrB)) {
-        // User is asking for the date in a specific location
-        intentArg = cleanedIntentReq.substring(dateSearchStrB.length);
-        return ASK_DATE_INTENT;
-      }
-      else if (cleanedIntentReq.toLowerCase().startsWith(timeSearchStrA)) {
-        // User is asking for the time in a specific location
-        intentArg = cleanedIntentReq.substring(timeSearchStrA.length);
-        return ASK_TIME_INTENT;
-      }
-    }
-    else if (locale == 'fr-FR') {
-      dateSearchStrA = "quelle date est-il ";
-      timeSearchStrA = 'quelle heure est-il ';
-      if (cleanedIntentReq.toLowerCase().startsWith(dateSearchStrA)) {
-        // User is asking for the date in a specific location
-        intentArg = cleanedIntentReq.substring(dateSearchStrA.length);
-        return ASK_DATE_INTENT;
-      }
-      else if (cleanedIntentReq.toLowerCase().startsWith(timeSearchStrA)) {
-        // User is asking for the time in a specific location
-        intentArg = cleanedIntentReq.substring(timeSearchStrA.length);
-        return ASK_TIME_INTENT;
-      }
-    }
-    else if (locale == 'ja-JP') {
-      dateSearchStrA = 'では何日ですか';
-      timeSearchStrA = 'は今何時ですか';
-      timeSearchStrB = 'は何時ですか';
-      if (cleanedIntentReq.endsWith(dateSearchStrA)) {
-        // User is asking for the date in a specific location
-        intentArg = cleanedIntentReq.substring(0, cleanedIntentReq.length - dateSearchStrA.length);
-        return ASK_DATE_INTENT;
-      }
-      else if (cleanedIntentReq.endsWith(timeSearchStrA)) {
-        // User is asking for the time in a specific location
-        intentArg = cleanedIntentReq.substring(0, cleanedIntentReq.length - timeSearchStrA.length);
-        return ASK_TIME_INTENT;
-      }
-      else if (cleanedIntentReq.endsWith(timeSearchStrB)) {
-        // User is asking for the time in a specific location
-        intentArg = cleanedIntentReq.substring(0, cleanedIntentReq.length - timeSearchStrB.length);
-        return ASK_TIME_INTENT;
-      }
-    }
+
+  // If the user indicated that they want current information, then
+  // use ASK_FOR_CURRENT_INFO_INTENT
+  let lcIntentReq = cleanedIntentReq.toLowerCase();
+  if (lcIntentReq.includes(" current ") ||
+      lcIntentReq.includes("currently") ||
+      lcIntentReq.includes(" now") ||
+      lcIntentReq.includes(" at the moment") ||
+      lcIntentReq.includes(" at this moment") ||
+      lcIntentReq.includes("at the present time") ||
+      lcIntentReq.includes("at present") ||
+      lcIntentReq.includes("at this time") ||
+      lcIntentReq.includes(" yet") ||
+      lcIntentReq.includes(" latest ") ||
+      lcIntentReq.includes("at the present moment")) {
+    return ASK_FOR_CURRENT_INFO_INTENT;
   }
-  return intentsMap[stripFinalPunctuation(intentRequest.toLowerCase())];
+  //TODO: ADD RETURN?
 }
 
-export function fulfillIntent(intentRequest, lang) {
+export async function fulfillIntent(intentRequest, lang,
+                                    conversationText) {
   let today = new Date();
   let locale = lang.replace('_', '-');
   let formattedDate = "";
   let retFulfillment = "";
-  let intent = matchIntent(intentRequest, locale);
-  //console.log("intent: " + intent);
-  //console.log("intentRequest: " + intentRequest);
+  let intent = await matchIntent(intentRequest, locale);
+  console.log("intentRequest: " + intentRequest);
   //console.log("locale: " + locale);
 
-  if (intent == ASK_DATE_INTENT) {
-    if (intentArg != "") {
-      formattedDate = getFormattedDateByLocation(intentArg, locale);
-      if (formattedDate != null) {
-        if (locale == "en-US") {
-          retFulfillment = "Today is " + formattedDate + " " + intentArg + ".";
-        }
-        else if (locale == "es-ES") {
-          retFulfillment = "Hoy es " + formattedDate + " " + intentArg + ".";
-        }
-        else if (locale == "fr-FR") {
-          retFulfillment = "Aujourd'hui c'est le " + formattedDate + " " + intentArg + ".";
-        }
-        else if (locale == "ja-JP") {
-          // change 0 to 12 for Japanese
-          formattedDate = formattedDate.replace('後0:', '後12:')
-              .replace('前0:', '前12:');
-          retFulfillment = intentArg + "では" + formattedDate + "です。";
-        }
-      }
-      else {
-        if (locale == "en-US") {
-          retFulfillment = "I don't know what date it is " + intentArg + ".";
-        }
-        else if (locale == "es-ES") {
-
-          retFulfillment = "No se que fecha es " + intentArg + ".";
-        }
-        else if (locale == "fr-FR") {
-          retFulfillment = "Je ne sais pas quelle date c'est " + intentArg + ".";
-        }
-        else if (locale == "ja-JP") {
-          retFulfillment = intentArg + "の日付がわからない。";
-        }
-      }
-    }
-    else {
-      formattedDate = today.toLocaleDateString(locale,
-          {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
-      if (locale == "en-US") {
-        retFulfillment = "Today is " + formattedDate + ".";
-      }
-      else if (locale == "es-ES") {
-        retFulfillment = "Hoy es " + formattedDate + ".";
-      }
-      else if (locale == "fr-FR") {
-        retFulfillment = "Aujourd'hui c'est le " + formattedDate + ".";
-      }
-      else if (locale == "ja-JP") {
-        retFulfillment = "今日は" + formattedDate + "です。";
-      }
-    }
-  }
-  else if (intent == ASK_TIME_INTENT) {
-    if (intentArg != "") {
-      formattedDate = getFormattedTimeByLocation(intentArg, locale);
-      if (formattedDate != null) {
-        if (locale == "en-US") {
-          retFulfillment = "It is " + formattedDate + " " + intentArg + ".";
-        }
-        else if (locale == "es-ES") {
-          retFulfillment = formattedDate + " " + intentArg + ".";
-        }
-        else if (locale == "fr-FR") {
-          retFulfillment = "Il est " + formattedDate + " " + intentArg + ".";
-        }
-        else if (locale == "ja-JP") {
-          // change 0 to 12 for Japanese
-          formattedDate = formattedDate.replace('後0:', '後12:')
-              .replace('前0:', '前12:');
-          retFulfillment = intentArg + "は" + formattedDate + "です。";
-        }
-      }
-      else {
-        if (locale == "en-US") {
-          retFulfillment = "I don't know what time it is " + intentArg + ".";
-        }
-        else if (locale == "es-ES") {
-          retFulfillment = "No se que hora es " + intentArg + ".";
-        }
-        else if (locale == "fr-FR") {
-          retFulfillment = "Je ne sais pas quelle heure il est " + intentArg + ".";
-        }
-        else if (locale == "ja-JP") {
-          retFulfillment = "今" + intentArg + "が何時か分からない。";
-        }
-      }
-    }
-    else {
-      formattedDate = today.toLocaleTimeString(locale,
-          {hour: 'numeric', minute: 'numeric', hour12: true});
-      if (locale == "en-US") {
-        retFulfillment = "It is " + formattedDate + ".";
-      }
-      else if (locale == "es-ES") {
-        // TODO: Work out how to say something like "the time is" in Spanish
-        retFulfillment = formattedDate;
-      }
-      else if (locale == "fr-FR") {
-        retFulfillment = "Il est " + formattedDate + ".";
-      }
-      else if (locale == "ja-JP") {
-        formattedDate = formattedDate.replace('後0:', '後12:')
-            .replace('前0:', '前12:');
-        retFulfillment = "今" + formattedDate + "です。";
-      }
-    }
-  }
-  else if (intent == ASK_DAY_INTENT) {
-    // Day is in long format, e.g. 日曜日, in japanese
-    formattedDate = today.toLocaleString(locale, {weekday: 'long'});
-    if (locale == "en-US") {
-      retFulfillment = "Today is " + formattedDate + ".";
-    }
-    else if (locale == "es-ES") {
-      retFulfillment = "Hoy es " + formattedDate + ".";
-    }
-    else if (locale == "fr-FR") {
-      retFulfillment = "Aujourd'hui ç'est " + formattedDate + ".";
-    }
-    else if (locale == "ja-JP") {
-      retFulfillment = "今日は" + formattedDate + "です。";
-    }
-  }
-  else if (intent == ASK_MONTH_INTENT) {
-    // Month is in long format, e.g. 一月 or 二月, in japanese
-    formattedDate = today.toLocaleString(locale, {month: 'long'});
-    if (locale == "en-US") {
-      retFulfillment = "It is " + formattedDate + ".";
-    }
-    else if (locale == "es-ES") {
-      retFulfillment = "Es " + formattedDate + ".";
-    }
-    else if (locale == "fr-FR") {
-      retFulfillment = "Il est " + formattedDate + ".";
-    }
-    else if (locale == "ja-JP") {
-      retFulfillment = formattedDate + "です。";
-    }
+  if (
+      intent == ASK_FOR_CURRENT_INFO_INTENT ||
+      intent == ASK_POPULATION_INTENT ||
+      intent == ASK_AGE_INTENT ||
+      intent == ASK_TEMPERATURE_INTENT ||
+      intent == ASK_WEATHER_INTENT ||
+      intent == ASK_NEWS_INTENT ||
+      intent == ASK_STOCK_PRICE_INTENT ||
+      intent == ASK_FULL_MOON_INTENT ||
+      intent == CALCULATE_INTENT ||
+      intent == ASK_DISTANCE_INTENT ||
+      intent == ASK_TRAVEL_TIME_INTENT ||
+      intent == ASK_BUSINESS_INTENT ||
+      intent == ASK_DATE_INTENT ||
+      intent == ASK_TIME_INTENT
+  ) {
+    // Get answers from the web.
+    retFulfillment = invokeSerpapi(intent, intentRequest, lang,
+        conversationText);
   }
 
   return retFulfillment;
 }
 
-function getFormattedDateByLocation(locStr, locale) {
-  let retFormattedDate = null;
-  let timeZoneStr = getTimeZoneStr(locStr, locale);
-  let today = new Date();
-  if (timeZoneStr != null) {
-    retFormattedDate = today.toLocaleDateString(locale,
-        {timeZone: timeZoneStr, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
-  }
-  return retFormattedDate;
-}
 
-function getFormattedTimeByLocation(locStr, locale) {
-  let retFormattedTime = null;
-  let timeZoneStr = getTimeZoneStr(locStr, locale);
-  let now = new Date();
-  if (timeZoneStr != null) {
-    retFormattedTime = now.toLocaleTimeString(locale,
-        {timeZone: timeZoneStr, hour: 'numeric', minute: 'numeric', hour12: true});
+async function invokeSerpapi(intent, intentRequest, lang,
+                             conversationText) {
+  // Compose a question from the conversation text so that the SERP API query
+  // has enough context.
+  let questionFromConversation = await composeQuestionFromConversation(conversationText);
+  console.log("===Conversation so far: " + conversationText);
+  console.log("===Question from conversation: " + questionFromConversation);
+  console.log("===Intent: " + intent);
+
+  let retFulfillment = getTemporalStr(questionFromConversation, lang);
+  console.log("$$$$$Temporal string: " + retFulfillment);
+  if (retFulfillment != "") {
+    // No need to invoke the SERP API.
+    return retFulfillment;
   }
-  return retFormattedTime;
+
+  console.log("Calling querySerpapi");
+  const response = await fetch("/api/serpapi", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      intent: intent,
+      question: questionFromConversation,
+      lang: lang,
+    })
+  });
+  const serpData = await response.json();
+  console.log("serpData.result:" + serpData.result);
+
+  let cleanedUpAnswer = serpData.result;
+  // remove outer quotes from the answer
+  if (cleanedUpAnswer.startsWith('"') && cleanedUpAnswer.endsWith('"')) {
+    cleanedUpAnswer = cleanedUpAnswer.substring(1, cleanedUpAnswer.length - 1);
+  }
+  // replace middle dots with commas
+  cleanedUpAnswer = cleanedUpAnswer.replace(/·/g, ',');
+
+  // Begin using the correctStandardLanguage function when it works properly.
+  retFulfillment = cleanedUpAnswer;
+  /*
+  let correctedStdLang = await correctStandardLanguage(cleanedUpAnswer, lang);
+  console.log("correctedStdLang:" + correctedStdLang);
+  retFulfillment = correctedStdLang;
+   */
+
+  return retFulfillment;
 }

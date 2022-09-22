@@ -103,6 +103,8 @@ const locTimeZoneMap = {
   "デンバー": "America/Denver", //ja-JP
 
   //--Phoenix
+  "in phoenix arizona": "America/Phoenix", //en-US
+  "in phoenix arizona usa": "America/Phoenix", //en-US
   "in phoenix": "America/Phoenix", //en-US
   "en fenix": "America/Phoenix", //es-ES
   "à phénix": "America/Phoenix", //fr-FR
@@ -168,12 +170,18 @@ const locTimeZoneMap = {
 
   //--Perth
   "in perth": "Australia/Perth", //en-US
+  "in perth australia": "Australia/Perth", //en-US
   "en perth": "Australia/Perth", //es-ES
   "à perth": "Australia/Perth", //fr-FR
   "パース": "Australia/Perth", //ja-JP
+  "perth": "Australia/Perth", //en-US
+  "perth australia": "Australia/Perth", //en-US
 
   //--Canberra
   "in canberra": "Australia/Canberra", //en-US
+  "in canberra, australia": "Australia/Canberra", //en-US
+  "in canberra australia": "Australia/Canberra", //en-US
+  "in the capital of australia, canberra": "Australia/Canberra", //en-US
   "en canberra": "Australia/Canberra", //es-ES
   "à canberra": "Australia/Canberra", //fr-FR
   "キャンベラ": "Australia/Canberra", //ja-JP

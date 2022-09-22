@@ -6,9 +6,10 @@ The **Talk w/GPT-3** application was developed by [James L. Weaver](https://gith
 - **Large language model:** GPT-3 from [OpenAI](https://openai.com/) 
 - **Voice speech to text:** [react-speech-recognition](https://www.npmjs.com/package/react-speech-recognition) React library. This library requires using a Chrome browser, or using a polyfill.
 - **Voice text to speech:** [Amazon Polly](https://aws.amazon.com/polly/)
+- **Web search:** [SerpApi](https://serpapi.com/)
 - **Animated speaking avatars:** [Ex-Human](https://exh.ai/) Talking Heads
 
-This is a "bring your own keys" application, so you'll need keys for OpenAI, Amazon Polly, and optionally Ex-Human. 
+This is a "bring your own keys" application, so you'll need keys for OpenAI, Amazon Polly, SerpApi and optionally Ex-Human. 
 
 Here's a three-minute [video that demonstrates some of the application's functionality](https://youtu.be/QXnWlAQq8tY).
 

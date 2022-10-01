@@ -29,7 +29,13 @@ import {useEffect} from "react";
 import styles from '../styles/Home.module.css'
 import {fulfillIntent} from './api/intent_matching.js';
 import {getTemporalStr} from "./api/temporal.js";
+import {getVoiceOptions} from "./api/voice_options.js";
 
+import {
+  GRADUATED, DIDNT_ATTEND,
+  DEFAULT_AGE,
+  AVATAR_HEIGHT
+} from '../public/constants';
 
 ///////////////////////// USER CONFIGURATION //////////////////////////
 // Supply your AWS credentials, either in environment variables or in the code below:

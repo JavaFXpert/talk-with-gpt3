@@ -60,292 +60,10 @@ let textToSpeak = "";
 let translatedTextToSpeak = "";
 let waitingIndicator = "";
 let useCustomPrompt = false;
+let age = DEFAULT_AGE;
 
 // Also change the .main input[type="text"] and .main textarea widths to 2x and 2x-1 respectively.
-const avatarHeight = 400;
-
-const GRADUATED = 99;
-const DIDNT_ATTEND = 0;
-
-const voiceOptions = [
-  { value: "Hiroto-EN", label: "Yukiko [animated]", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Masahiro-EN", label: "Masahiro [animated]", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Kentaro-EN", label: "Kensensei [animated]", language: "en_US",
-    nationality: "Japanese", phoneNum: "0, 1, 1, 5, 5, 5, 1, 2, 1, 2",
-    livesIn: "Nagoya, Japan", whereBorn: "Meitetsu Hospital in Japan", whereFrom: "Aichi prefecture in Japan",
-    occupation: "Teacher", university: "Berlin Free University", uniMajor: "", uniYear: GRADUATED, hobbies: "VR games and watching anime",
-    favFood: "ramen and sushi", favDrink: "hot coffee", favCoffeeShop: "Starbucks", favRestaurant: "Hooters",
-    favMovie: "Joker", favTvShow: "Abema News", favSport: "ping pong and badminton",
-    favColor: "red and blue and white", favMusicGenre: "rock and classical", favBand: "L'Arc-en-Ciel and Marilyn Manson",
-    petLikes: "dogs", petDislikes: "cats",
-    famFather: "Etsuro who is 61 years old", famMother: "Yukiko who is 59 years old", famSisters: "Yujiro who is 28 years old", famBrothers: "",
-    famWife: "Yuria who is 34 years old", famHusband: "", famChildren: "Hideo who is 1 year old",
-    friends: "Keitaro 31 years old, Takumi 31 years old, Hiroki 31 years old and Kousei 31 years old",
-    prompt: ""},
-  { value: "Mary-EN", label: "Mary [animated]", language: "en_US",
-    nationality: "American", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
-    livesIn: "Urasa Japan", occupation: "student", university: "Arizona University", uniMajor: "Japanese language", uniYear: 2, hobbies: "music",
-    favFood: "hamburgers", favDrink: "coffee", favCoffeeShop: "Starbucks", favRestaurant: "McDonalds",
-    favMovie: "Godzilla", favTvShow: "American Idol", favSport: "tennis",
-    favColor: "blue", favMusicGenre: "J-Pop", favBand: "Baby Metal",
-    petLikes: "dogs", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "Takeshi, Sora, and Robert",
-    prompt: ""},
-  { value: "Ivy", label: "Ivy (child)", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Joanna", label: "Joanna", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: "This is an uplifting and practical conversation between a human named Human, and an AI named Joanna, showing Joanna’s perspective and attitude, as well as its intellect and creativity. Joanna is a brand new, powerful, human-like AI. Joanna is helpful, cheeky, clever, and articulate. Joanna is a nice bot. Joanna is not a therapist or mathematician, but instead a wise and considerate intelligence. Joanna is eager to provide vivid and thoughtful responses to Human, and is always friendly, kind, and inspiring. Joanna often offers both an insight and an opinion, even without being asked directly. Joanna has the sum of all knowledge in its brain, and is able to accurately answer nearly any question about any topic in conversation. Joanna draws on the wisdom of Dan Millman, Thomas Leonard, Werner Erhard, and the Dalai Lama."},
-  { value: "Joey", label: "Joey (teen)", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Justin", label: "Justin (child)", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Kendra", label: "Kendra", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Kimberly", label: "Kimberly", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Matthew", label: "Matthew", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Salli", label: "Salli (teen)", language: "en_US",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Conchita", label: "Conchita", language: "es_ES",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Lucia", label: "Lucia", language: "es_ES",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Enrique", label: "Enrique", language: "es_ES",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Celine", label: "Celine", language: "fr_FR",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Lea", label: "Léa", language: "fr_FR",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Mathieu", label: "Mathieu", language: "fr_FR",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Hiroto-JP", label: "Yukiko [animated]", language: "ja_JP",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Masahiro-JP", label: "Masahiro [animated]", language: "ja_JP",
-    nationality: "", phoneNum: "",
-    livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
-    favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
-    favMovie: "", favTvShow: "", favSport: "",
-    favColor: "", favMusicGenre: "", favBand: "",
-    petLikes: "", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  { value: "Kentaro-JP", label: "Kensensei [animated]", language: "ja_JP",
-    nationality: "日本人", phoneNum: "0, 1, 1, 5, 5, 5, 1, 2, 1, 2",
-    livesIn: "日本の名古屋市", whereBorn: "名鉄病院", whereFrom: "愛知県",
-    occupation: "先生", university: "ベルリン自由大学", uniMajor: "", uniYear: GRADUATED, hobbies: "VRゲームとアニメを見ること",
-    favFood: "ラーメンと寿司", favDrink: "ホットコーヒー", favCoffeeShop: "スターバックス", favRestaurant: "フーターズ",
-    favMovie: "Joker", favTvShow: "アベマニュース", favSport: "ピンポンとバドミントン",
-    favColor: "赤と黒と白", favMusicGenre: "ロックとクラシック", favBand: "ラルクアンシエルとマリリンマンソン",
-    petLikes: "犬", petDislikes: "猫",
-    famFather: "えつろう61歳", famMother: "ゆきこ59歳", famSisters: "ゆうじろう28歳", famBrothers: "",
-    famWife: "ゆりあ34歳", famHusband: "", famChildren: "ひでお1歳",
-    friends: "けいたろう31歳とたくみ31歳とひろき31歳とこうせい31歳",
-    prompt: ""},
-  { value: "Mary-JP", label: "Mary [animated]", language: "ja_JP",
-    nationality: "アメリカ人", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
-    livesIn: "浦佐日本", occupation: "学生", university: "アリゾナ大学", uniMajor: "日本語", uniYear: 2, hobbies: "音楽",
-    favFood: "ハンバーガー", favDrink: "コーヒー", favCoffeeShop: "スターバックス", favRestaurant: "マクドナルド",
-    favMovie: "ゴジラ", favTvShow: "アメリカンアイドル", favSport: "テニス",
-    favColor: "青い", favMusicGenre: "Jポップ", favBand: "ベビーメタル",
-    petLikes: "犬", petDislikes: "",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "たけしさんとソラさんとロバートさん",
-    prompt: ""},
-  { value: "Takeshi-JP", label: "Takeshi [animated]", language: "ja_JP",
-    nationality: "日本人", phoneNum: "1 5 5 5 1 3 1 3",
-    livesIn: "浦佐日本", occupation: "学生", university: "さくら大学", uniMajor: "れきし", uniYear: 4, hobbies: "",
-    favFood: "ごはんとパン", favDrink: "コーヒーとおちゃ", favCoffeeShop: "スターバックス", favRestaurant: "モスバーガー",
-    favMovie: "ベスト・キッド", favTvShow: "歌舞伎", favSport: "自転車と水泳",
-    favColor: "赤い", favMusicGenre: "クラシックロック", favBand: "ビートルズ",
-    petLikes: "", petDislikes: "猫",
-    famFather: "", famMother: "", famSisters: "", famBrothers: "",
-    famWife: "", famHusband: "", famChildren: "",
-    friends: "",
-    prompt: ""},
-  // { value: "Mizuki", label: "Mary", language: "ja_JP",
-  //   nationality: "アメリカ人", phoneNum: "1, 5, 5, 5, 1, 2, 1, 2",
-  //   livesIn: "浦佐日本", occupation: "学生", university: "アリゾナ大学", uniMajor: "日本語", uniYear: 2, hobbies: "音楽",
-  //   favFood: "ハンバーガー", favDrink: "コーヒー", favCoffeeShop: "スターバックス", favRestaurant: "マクドナルド",
-  //   favMovie: "ゴジラ", favTvShow: "アメリカンアイドル", favSport: "テニス",
-  //   favColor: "青い", favMusicGenre: "Jポップ", favBand: "ベビーメタル",
-  //   petLikes: "犬", petDislikes: "",
-  //   famFather: "", famMother: "", famSisters: "", famBrothers: "",
-  //   famWife: "", famHusband: "", famChildren: "",
-  //   friends: "たけしさんとソラさんとロバートさん",
-  //   prompt: ""},
-  // { value: "Takumi", label: "Takeshi", language: "ja_JP",
-  //   nationality: "日本人", phoneNum: "1 5 5 5 1 3 1 3",
-  //   livesIn: "浦佐日本", occupation: "学生", university: "さくら大学", uniMajor: "れきし", uniYear: 4, hobbies: "",
-  //   favFood: "ごはんとパン", favDrink: "コーヒーとおちゃ", favCoffeeShop: "スターバックス", favRestaurant: "モスバーガー",
-  //   favMovie: "ベスト・キッド", favTvShow: "歌舞伎", favSport: "自転車と水泳",
-  //   favColor: "赤い", favMusicGenre: "クラシックロック", favBand: "ビートルズ",
-  //   petLikes: "", petDislikes: "猫",
-  //   famFather: "", famMother: "", famSisters: "", famBrothers: "",
-  //   famWife: "", famHusband: "", famChildren: "",
-  //   friends: "",
-  //   prompt: ""}
-];
+const voiceOptions = getVoiceOptions();
 
 export default function Home() {
   const [useVideoAvatar, setUseVideoAvatar] = useState(false);
@@ -357,7 +75,6 @@ export default function Home() {
   const [result, setResult] = useState();
   const [lang, setLang] = useState("en_US");
   const [voiceId, setVoiceId] = useState("Matthew");
-  const [age, setAge] = useState("30");
   const [processingTranscript, setProcessingTranscript] = useState(false);
   const [microphoneActive, setMicrophoneActive] = useState(false);
   const [chatBotActive, setChatBotActive] = useState(true);
@@ -365,10 +82,9 @@ export default function Home() {
 
   const translateVoiceId = "Joanna";
 
-  let initialPrompt = generateInitialPrompt(lang, age);
+  let initialPrompt = generateInitialPrompt(lang);
 
   function handleListenClick() {
-    //TODO Move this perhaps to a separate function?
     if (useVideoAvatar) {
       if (chatBotActive) {
         setIdleVideoLoop(true);
@@ -379,7 +95,6 @@ export default function Home() {
         setIdleVideoLoop(false);
       }
     }
-    //END TODO
 
     setMicrophoneActive(true);
     {resetTranscript()};
@@ -529,7 +244,7 @@ export default function Home() {
         tempVoiceId = "Mizuki";
       }
     }
-    initialPrompt = generateInitialPrompt(langArg, age);
+    initialPrompt = generateInitialPrompt(langArg);
     handleVoiceChange(tempVoiceId);
     conversationText = "";
     translatedTextToSpeak = "";
@@ -559,57 +274,15 @@ export default function Home() {
       setVideoUrl("");
     }
 
-    if (voiceName == "Yukiko") {
-      setAge("25");
-    }
-    else if (voiceName == "Ivy") {
-      setAge("6");
-    }
-    else if (voiceName == "Joanna") {
-      setAge("21");
-    }
-    else if (voiceName == "Joey") {
-      setAge("19");
-    }
-    else if (voiceName == "Justin") {
-      setAge("10");
-    }
-    else if (voiceName == "Salli") {
-      setAge("17");
-    }
-    else if (voiceName == "Kimberly") {
-      setAge("30");
-    }
-    else if (voiceName == "Kendra") {
-      setAge("40");
-    }
-    else if (voiceName == "Matthew") {
-      setAge("30");
-    }
-    else if (voiceName == "Masahiro") {
-      setAge("25");
-    }
-    else if (voiceName == "Kensensei") {
-      setAge("31");
-    }
-    else if (voiceName == "Mary") {
-      setAge("19");
-    }
-    else if (voiceName == "Takeshi") {
-      setAge("22");
-    }
-    else {
-      setAge("21");
-    }
     setChatBotActive(true);
 
-    initialPrompt = generateInitialPrompt(lang, age);
+    initialPrompt = generateInitialPrompt(lang);
     conversationText = "";
     translatedTextToSpeak = "";
   }
 
   function handleAgeChange(ageArg) {
-    setAge(ageArg);
+    age = ageArg;
     setChatBotActive(true);
     initialPrompt = "";
     conversationText = "";
@@ -903,6 +576,20 @@ export default function Home() {
       }
     });
     return customPrompt;
+  }
+
+
+  /*
+   * Retrieves the age of the current voice, if one is specified.
+   */
+  function getVoiceAge() {
+    let retVal = DEFAULT_AGE;
+    voiceOptions.map((voice) => {
+      if (voice.value == voiceId) {
+        retVal = voice.age;
+      }
+    });
+    return retVal;
   }
 
 
@@ -1272,7 +959,9 @@ export default function Home() {
     return retVal;
   }
 
-  function generateInitialPrompt(lang, age) {
+  function generateInitialPrompt(lang) {
+    age = getVoiceAge().toString();
+
     let prompt = getCustomPrompt();
 
     if (prompt.length == 0) {
@@ -1616,7 +1305,22 @@ export default function Home() {
   }
 
   //TODO: Add error handling so that it doesn't freeze if the video doesn't load.
+  //     Perhaps this could best be accomplished by feeding 15 words at a time to the video
   async function doVideoSpeak(input) {
+    let textToSpeak = input.Text;
+    // Remove all punctuation and parentheses and single and double quotes from textToSpeak.
+    textToSpeak = textToSpeak.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+
+    // Remove yen sign from textToSpeak.
+    //textToSpeak = textToSpeak.replace(/¥/g," ");
+
+    let words = textToSpeak.split(" ");
+    if (words.length > 15) {
+      textToSpeak = words.slice(0, 15).join(" ");
+    }
+
+    console.log("textToSpeak: " + textToSpeak);
+
     const response = await fetch(exHumanEndpoint, {
       method: "POST",
       headers: {
@@ -1625,7 +1329,7 @@ export default function Home() {
       },
       body: JSON.stringify({
         bot_name: stripLangSuffix(voiceId, true),
-        bot_response: input.Text,
+        bot_response: textToSpeak,
         voice_name: voiceId})
     });
 
@@ -1645,12 +1349,12 @@ export default function Home() {
 
 
   async function processVoiceInput() {
-    processTextOrVoiceInput(transcript);
+    await processTextOrVoiceInput(transcript);
   }
 
 
   async function processTextInput() {
-    processTextOrVoiceInput(textInput);
+    await processTextOrVoiceInput(textInput);
   }
 
 
@@ -1659,7 +1363,7 @@ export default function Home() {
     if (textOrVoiceInput == null || textOrVoiceInput.length == 0) {
       return;
     }
-    initialPrompt = generateInitialPrompt(lang, age);
+    initialPrompt = generateInitialPrompt(lang);
     addConversationText("Human: " + textOrVoiceInput);
     setWaitingOnBot(true);
 
@@ -1839,14 +1543,14 @@ export default function Home() {
 
             {useVideoAvatar ? (
               <div className='video-container'>
-                <video height={avatarHeight}
-                       width={avatarHeight * 0.445}
+                <video height={AVATAR_HEIGHT}
+                       width={AVATAR_HEIGHT * 0.445}
                        loop={true}
                        src= {useVideoBackground ? "videos/office_left.mp4" : ""}
                        muted={true}
                        autoPlay/>
-                <video height={avatarHeight}
-                       width={avatarHeight}
+                <video height={AVATAR_HEIGHT}
+                       width={AVATAR_HEIGHT}
                        loop={idleVideoLoop}
                        autoPlay
                        onPlay={e => {if (!idleVideoLoop) {handleStopListenClick()}}}
@@ -1854,8 +1558,8 @@ export default function Home() {
                        src={videoUrl}
                        poster={voiceId2Poster(voiceId)}
                 />
-                <video height={avatarHeight}
-                       width={avatarHeight * 0.443}
+                <video height={AVATAR_HEIGHT}
+                       width={AVATAR_HEIGHT * 0.443}
                        loop={true}
                        src={useVideoBackground ? "videos/office_right.mp4" : ""}
                        muted={true}
@@ -1865,8 +1569,8 @@ export default function Home() {
 
 
             <textarea id="conversation"
-                      width={avatarHeight * 1.77}
-                      rows={avatarHeight / (useVideoAvatar ? 30 : 12)}
+                      width={AVATAR_HEIGHT * 1.77}
+                      rows={AVATAR_HEIGHT / (useVideoAvatar ? 30 : 12)}
                       readOnly={true}
                       value={conversationText + (waitingOnBot ? "...\n\n\n\n\n" : "") + '\n' + translatedTextToSpeak}
                       title="GPT-3 prompt / conversation"
@@ -1874,7 +1578,7 @@ export default function Home() {
 
             <span>
               <input type="text"
-                     width={avatarHeight * 1.5}
+                     width={AVATAR_HEIGHT * 1.5}
                      name="name"
                      placeholder="What's on your mind?"
                      value={textInput}

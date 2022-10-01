@@ -184,6 +184,7 @@ async function matchIntent(intentRequest, locale) {
       lcIntentReq.includes(" now") ||
       lcIntentReq.includes(" at the moment") ||
       lcIntentReq.includes(" at this moment") ||
+      lcIntentReq.includes(" most recent") ||
       lcIntentReq.includes("at the present time") ||
       lcIntentReq.includes("at present") ||
       lcIntentReq.includes("at this time") ||
@@ -208,9 +209,9 @@ export async function fulfillIntent(intentRequest, lang,
   if (
       intent == ASK_FOR_CURRENT_INFO_INTENT ||
       intent == ASK_POPULATION_INTENT ||
-      intent == ASK_AGE_INTENT ||
+      (intent == ASK_AGE_INTENT && intentArg.trim() != "") ||
       intent == ASK_TEMPERATURE_INTENT ||
-      intent == ASK_WEATHER_INTENT ||
+      (intent == ASK_WEATHER_INTENT && intentArg.trim() != "") ||
       intent == ASK_NEWS_INTENT ||
       intent == ASK_STOCK_PRICE_INTENT ||
       intent == ASK_FULL_MOON_INTENT ||

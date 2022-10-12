@@ -140,7 +140,9 @@ export default function Home() {
   }
 
   // Suggest removing "Arg" suffix since its needless
-  function handleLanguageChange(langArg) {
+  function handleLanguageChange(event) {
+    // I changed this to show how to use a point free style on the call, if desired.
+    const {value: langArg} = event.target;
     setLang(langArg);
     setChatBotActive(true);
 
@@ -1513,9 +1515,8 @@ export default function Home() {
                   value={lang}
                   // Suggest using a separate label, tied to the input via htmlFor for accessibility.
                   title="Select the language of the conversation"
-                  onChange={(e) => {
-                    handleLanguageChange(e.target.value);
-                  }}
+                  // If you want, you can use a "point free" style here. The event will be passed to the handler, and you can read event.target.value there.
+                  onChange={handleLanguageChange}
               >
                 {/* Suggest creating an array of languages and mapping over it here. */}
                 <option value="en_US">English US</option>

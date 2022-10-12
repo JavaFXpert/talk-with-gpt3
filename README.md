@@ -45,7 +45,7 @@ Follow the instructions below to try the **Talk w/GPT-3** application out for yo
 
     `pages/index.js` 
 
-   Either supply the keys/token directly where indicated, or use environment variables.
+   Either supply the keys/token directly where indicated, or use environment variables. Why is this handled differently than the keys in step 6?
 
 8. Create an optimized production build of the app
 
@@ -220,7 +220,7 @@ Any AI characters that have a custom prompt will use the GPT-3 `davinci` model r
 
 ### Setting preferences of an AI character
 
-To influence responses of an AI character, edit the `voiceOptions` JSON in the `pages/index.js` file, replacing various attributes with the AI character's preferences. For example, some imaginary preferences of the Mary character from the [Genki Japanese textbook](https://genki3.japantimes.co.jp/en/) are expressed in the following snippet.
+To influence responses of an AI character, edit the `voiceOptions` JSON in the `pages/index.js` file (This should say `voice_options.js` in pages/api, right?), replacing various attributes with the AI character's preferences. For example, some imaginary preferences of the Mary character from the [Genki Japanese textbook](https://genki3.japantimes.co.jp/en/) are expressed in the following snippet.
 
 ```
 { value: "Mizuki", label: "Mary", language: "ja_JP",

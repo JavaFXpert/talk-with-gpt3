@@ -97,6 +97,7 @@ async function matchIntent(intentRequest, locale) {
   let cleanedIntentReq = stripFinalPunctuation(intentRequest).trim();
 
   // Try to match the intent by using an intent result from GPT
+  // Suggest extracting so it's not recreated on each invocation.
   let intentPrompt = "Convert this text to a short intent.\n" +
       "\n" +
       "Text: What is the capital of Ohio?\n" +

@@ -18,6 +18,7 @@
 // Note that for non-Japanese locales, the preposition is included.
 // TODO: Add support for other locations, and put in separate file, using some
 // of these as a guide https://www.worldometers.info/geography/alphabetical-list-of-countries/
+// Suggest storing right-hand values as a single const to eliminate repeated strings.
 const locTimeZoneMap = {
 
   //United States

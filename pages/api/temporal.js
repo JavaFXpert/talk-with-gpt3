@@ -24,6 +24,15 @@ const ASK_MONTH_INTENT = 'AskMonthIntent';
 let intentArg = "";
 
 // Key entries must be lowercase
+// Translations are currently handled across the app.
+// What about having a single interface that declares all the translation keys?
+// Then you could have one file for each language. 
+// The file would contain all the words/phrases for a given language used throughout the app.
+// If using TypeScript, the interface/type could enforce that all translations are populated
+// for each language. And adding a new language would involve merely adding a new file.
+// You wouldn't have to touch any existing code.
+// For instances where there are dynamic placeholders in the middle, 
+// you could put functions in the file that accept the necessary args.
 const intentsMap = {
   "what's today's date": ASK_DATE_INTENT, //en-US
   "what's the date today": ASK_DATE_INTENT, //en-US

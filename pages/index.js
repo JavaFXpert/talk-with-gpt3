@@ -24,8 +24,7 @@ const AWS = require('aws-sdk')
 
 import Head from 'next/head'
 import SpeechRecognition, {useSpeechRecognition} from 'react-speech-recognition';
-import {useState} from "react";
-import {useEffect} from "react";
+import {useState, useEffect} from "react"; // I unified.
 import styles from '../styles/Home.module.css'
 import {fulfillIntent} from './api/intent_matching.js';
 import {getTemporalStr} from "./api/temporal.js";
@@ -39,6 +38,8 @@ import {
 
 ///////////////////////// USER CONFIGURATION //////////////////////////
 // Supply your AWS credentials, either in environment variables or in the code below:
+// Suggest standardizing on environment variables so the user doesn't have to look through the code or change the code.
+// You could provide a small command line that prompts the user and generates the .env 
 AWS.config.credentials = new AWS.Credentials(
     "ACCESS_KEY_ID",
     "SECRET_ACCESS_KEY",
@@ -48,17 +49,19 @@ AWS.config.credentials = new AWS.Credentials(
 const EX_HUMAN_TOKEN = "EX_HUMAN_TOKEN";
 ///////////////////////// END OF USER CONFIGURATION //////////////////////////
 
-
+// Suggest moving to constants.js
 const exHumanEndpoint = "https://api.exh.ai/animations/v1/generate_lipsync";
 
+// Suggest moving to constants.js
 AWS.config.region = 'us-east-1';
 const translate = new AWS.Translate({region: AWS.config.region});
 const Polly = new AWS.Polly({region: AWS.config.region});
 
+// Why not use React state for these?
 let conversationText = "";
 let textToSpeak = "";
 let translatedTextToSpeak = "";
-let waitingIndicator = "";
+let waitingIndicator = ""; // Unused. Suggest using ESLint to find unused variables and enforce.
 let useCustomPrompt = false;
 let age = DEFAULT_AGE;
 
@@ -70,17 +73,17 @@ export default function Home() {
   const [useVideoBackground, setUseVideoBackground] = useState(false);
   const [idleVideoLoop, setIdleVideoLoop] = useState(false);
   const [textInput, setTextInput] = useState("");
-  const [audioUrl, setAudioUrl] = useState("https://filesamples.com/samples/audio/mp3/sample1.mp3");
+  const [audioUrl, setAudioUrl] = useState("https://filesamples.com/samples/audio/mp3/sample1.mp3"); // Suggest declaring in constants.js
   const [videoUrl, setVideoUrl] = useState("");
   const [result, setResult] = useState();
   const [lang, setLang] = useState("en_US");
-  const [voiceId, setVoiceId] = useState("Matthew");
+  const [voiceId, setVoiceId] = useState("Matthew"); // Suggest declaring in constants.js. Also, why do other voiceId's below have a language suffix, but this one doesn't? Can it be consistent?
   const [processingTranscript, setProcessingTranscript] = useState(false);
   const [microphoneActive, setMicrophoneActive] = useState(false);
   const [chatBotActive, setChatBotActive] = useState(true);
   const [waitingOnBot, setWaitingOnBot] = useState(false);
 
-  const translateVoiceId = "Joanna";
+  const translateVoiceId = "Joanna"; // Suggest declaring in constants.js, then it can be referenced below without a declaration here.
 
   let initialPrompt = generateInitialPrompt(lang);
 
@@ -136,6 +139,7 @@ export default function Home() {
     }
   }
 
+  // Suggest removing "Arg" suffix since its needless
   function handleLanguageChange(langArg) {
     setLang(langArg);
     setChatBotActive(true);
@@ -147,6 +151,7 @@ export default function Home() {
     if (langArg == "en_US") {
       if (voiceName == "Yukiko" || voiceName == "Masahiro" || voiceName == "Kensensei" ||
           voiceName == "Mary") {
+        // It looks like all voice aren't created equal. That feels like a consistency issue. Regardless, this looks like metadata that should be declared on each voice in voice_options.js
         setUseVideoAvatar(true);
         setIdleVideoLoop(true);
         setVideoUrl(`videos/${voiceName}.mov`);
@@ -159,6 +164,8 @@ export default function Home() {
         }
 
         if (voiceName == "Yukiko") {
+          // The calls to setVoiceId below appear to be redundant since setVoiceId is ultimately set again in handleVoiceChange.
+          // Also, could the voiceId be derived from the voice name by convention? It looks like ${voiceName}-${lang} could be the convention.
           setVoiceId("Hiroto-EN");
           tempVoiceId = "Hiroto-EN";
         }
@@ -294,6 +301,22 @@ export default function Home() {
     translatedTextToSpeak = "";
   }
 
+
+  // Suggest creating a map data structure to eliminate this function and the others like it below.
+  // Declaring the map outside the function so it's not recreated on every render.
+  // Then you can add new languages without changing the code, and you don't need repeated if/else statements for each language.
+  // Example:
+  const languageMap = {
+    "en_US": {
+      goingToSleep: "Going to sleep!",
+      wakingUp: "Waking up!"
+    },
+    "es_ES": {
+      goingToSleep: "¡Dormiré!",
+      wakingUp: "¡Despertando!"
+    }
+    // ...
+  }
 
   function sayGoingToSleep() {
     if (lang == "en_US") {
@@ -508,21 +531,25 @@ export default function Home() {
   }, [interimTranscript, finalTranscript]);
 
   if (!browserSupportsSpeechRecognition) {
+    // This feels "buried". Traditionally all returned JSX resides at the bottom of the component. I suggest placing this immediately above the returned JSX. Also suggest returning JSX instead of a string.
     return "<span>Browser doesn't support speech recognition.</span>";
   }
   else {
     if (microphoneActive) {
+      // Do you really want to fire this on each render? I suspect not. Consider moving this to a useEffect hook with an empty dependency array so it fires once immediately after the initial render.
       SpeechRecognition.startListening({continuous: true, language: lang});
     }
   }
 
 
   // Remove language suffix from voice identifier if present. Takes the form of "-XX".
+  // This infers it might be helpful to store the voiceId and lang in separate pieces of state. Then they won't need split. They can easily be composed as needed, right?
   function stripLangSuffix(voiceArg, stripOnly) {
     let voiceName = voiceArg;
     if (voiceArg.indexOf("-") > 0) {
       voiceName = voiceArg.substring(0, voiceArg.indexOf("-"));
       if (voiceName == "Hiroto" && !stripOnly) {
+        // This feels like a hack. Perhaps I'm misunderstanding.
         // Rename "Hiroto" to "Yukiko"
         voiceName = "Yukiko";
       }
@@ -545,24 +572,25 @@ export default function Home() {
   } //stripLangSuffix
 
 
+  // Suggest storing the gender in each voice_option so this function isn't necessary.
+  // That said, returning early simplifies by eliminating the need for temp vars, so I'm showing the pattern below.
+  // And using a switch with a throw assures that all cases are handled.
   function genderStr(lang) {
     let males = ['Enrique', 'Joey', 'Justin', 'Kevin', 'Masahiro-EN', 'Masahiro-JP',
       'Kentaro-EN', 'Kentaro-JP', 'Mathieu', 'Matthew', 'Takeshi-JP', 'Takumi'];
-    let retGenderStr = "";
-    if (lang == "ja_JP") {
-      retGenderStr = males.includes(voiceId) ? '男性' : '女性';
+      switch(lang) {
+        case "ja_JP":
+          return males.includes(voiceId) ? '男性' : '女性';
+        case "es_ES":
+          return males.includes(voiceId) ? 'un español' : 'una mujer';
+        case "fr_FR":
+          return males.includes(voiceId) ? 'un homme' : 'une femme';
+        case "en_US":
+          return males.includes(voiceId) ? 'male' : 'female';
+        default:
+          throw new Error(`Unexpected language: ${lang}`);
+      }
     }
-    else if (lang == "es_ES") {
-      retGenderStr = males.includes(voiceId) ? 'un español' : 'una mujer';
-    }
-    else if (lang == "fr_FR") {
-      retGenderStr = males.includes(voiceId) ? 'un homme' : 'une femme';
-    }
-    else {
-      retGenderStr = males.includes(voiceId) ? 'male' : 'female';
-    }
-    return retGenderStr;
-  }
 
 
   /*
@@ -583,13 +611,11 @@ export default function Home() {
    * Retrieves the age of the current voice, if one is specified.
    */
   function getVoiceAge() {
-    let retVal = DEFAULT_AGE;
-    voiceOptions.map((voice) => {
-      if (voice.value == voiceId) {
-        retVal = voice.age;
-      }
-    });
-    return retVal;
+    // I suggest declaring values for all voices within voiceOptions (ideally enforced via TypeScript).
+    // Doing so will simplify all the code in this file because you can bank on having data for every property.
+    // You could still reference defaults within voiceOptions.
+    // That said, if you want to get a specific value from voiceOptions, you can use the find method, and fallback to a default using the nullish coalescing operator.
+    return voiceOptions.find((voice) => voice.value == voiceId) ?? DEFAULT_AGE;
   }
 
 
@@ -959,6 +985,9 @@ export default function Home() {
     return retVal;
   }
 
+  // I think this function can be eliminated by:
+  // 1. Store the current voice id in state
+  // 2. Assure that all voices have a value for all properties within voiceOptions (reference defaults in that file as needed)
   function generateInitialPrompt(lang) {
     age = getVoiceAge().toString();
 
@@ -997,6 +1026,9 @@ export default function Home() {
       let petDislikes = getPetDislikes();
 
       if (lang == "en_US") {
+        // Suggest moving all this to a map outside the component.
+        // Then the if statements need not be repeated, and the content isn't regenerated on every render.
+        // Plus the map can enforce that values are provided for all properties.
         prompt = "The following is a conversation with a " + age + " year old " + genderStr(lang) + " named " + voiceName + ". ";
         if (livesIn.length > 0) {
           prompt += voiceName + " lives in " + livesIn + ". ";
@@ -1270,6 +1302,7 @@ export default function Home() {
 
   function say(text) {
     const input = {
+      // Suggest using camelCase consistently for property names. (can enforce via ESLint)
       Text: text,
       OutputFormat: "mp3",
       VoiceId: voiceId,
@@ -1315,12 +1348,14 @@ export default function Home() {
     //textToSpeak = textToSpeak.replace(/¥/g," ");
 
     let words = textToSpeak.split(" ");
+    // Suggest replacing the "magic number" 15 with a well-named constant, perhaps declared in constants.js.
     if (words.length > 15) {
       textToSpeak = words.slice(0, 15).join(" ");
     }
 
     console.log("textToSpeak: " + textToSpeak);
 
+    // Suggest moving all fetch calls to /services. Handling them in one spot encourages consistency and avoids redundancy.
     const response = await fetch(exHumanEndpoint, {
       method: "POST",
       headers: {
@@ -1333,7 +1368,7 @@ export default function Home() {
         voice_name: voiceId})
     });
 
-    const res = await response;
+    const res = await response;  // Needless since already awaited above
 
     if (res.body instanceof ReadableStream) {
       let responseStream = new Response(res.body);
@@ -1343,6 +1378,7 @@ export default function Home() {
       setVideoUrl(url);
     }
     else {
+      // Suggest showing a friendly error to the user. This would "quietly" fail.
       console.log('video url unknown');
     }
   }
@@ -1354,6 +1390,7 @@ export default function Home() {
 
 
   async function processTextInput() {
+    // Suggest adding a try/catch and displaying an error message if the call fails. This suggestion applies to other calls as well.
     await processTextOrVoiceInput(textInput);
   }
 
@@ -1385,7 +1422,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           convText: initialPrompt + conversationText,
-          useCustomPrompt: useCustomPrompt,
+          useCustomPrompt, // Can eliminate right-hand side since it's the same as the left-hand side (Called object-shorthand)
           hallucinateIntent: false
         })
       });
@@ -1426,6 +1463,8 @@ export default function Home() {
   }
 
   function voiceId2Poster(voiceId) {
+    // Could you simplify using this convention?
+    return `${voiceId}.png`;
     let retPoster = "";
     if (voiceId.startsWith("Masahiro")) {
       retPoster = "Masahiro.png";
@@ -1446,15 +1485,17 @@ export default function Home() {
   }
 
   return (
-      <div>
+    <> {/* Since you don't need the div, you can just use a fragment. */}
         <Head>
           <title>Talk w/GPT-3</title>
-          <link rel="icon" href={microphoneActive ? "icons/microphone.png" : "icons/mute.png"}/>
+          {/* Can repeat this shortened path pattern below on other images */}
+          <link rel="icon" href={"icons/" + microphoneActive ? "microphone.png" : "mute.png"}/>
         </Head>
 
         <main className={styles.main}>
           <form onSubmit={onSubmit}>
             <span>
+              {/* Suggest using CSS rather than repeated spaces */}
               <b><i>Talk w/GPT-3&nbsp;&nbsp;&nbsp;&nbsp;</i></b>
               <img src={microphoneActive ? "icons/microphone.png" : "icons/mute.png"}
                    className={styles.icon} onClick={toggleListenClick}
@@ -1465,14 +1506,16 @@ export default function Home() {
                    title="Character toggles between awake/asleep states. When asleep the character won't respond. You may also say 'go to sleep' and 'wake up'."/>
 
               <select
-                  type="text"
+                  type="text" // This is invalid for a select element
                   name="language"
                   value={lang}
+                  // Suggest using a separate label, tied to the input via htmlFor for accessibility.
                   title="Select the language of the conversation"
                   onChange={(e) => {
                     handleLanguageChange(e.target.value);
                   }}
               >
+                {/* Suggest creating an array of languages and mapping over it here. */}
                 <option value="en_US">English US</option>
                 <option value="es_ES">Spanish ES</option>
                 <option value="fr_FR">French FR</option>
@@ -1490,9 +1533,10 @@ export default function Home() {
                     handleVoiceChange(e.target.value);
                   }}
               >
-                {voiceOptions.map((voice) => {
-                  return voice.language == lang ? <option value={voice.value}>{voice.label}</option> : null})
-                }
+                {/* I suggest using filter first to clarify your intent (since your goal is to offer voiceOptions for a specific language). Note that I also added a key to eliminate the key warning. */}
+                {voiceOptions.filter((voice) => voice.language == lang).map((voice) => (
+                  <option key={voice.value} value={voice.value}>{voice.label}</option>)
+                )}
               </select>
 
 
@@ -1542,12 +1586,14 @@ export default function Home() {
             </span>
 
             {useVideoAvatar ? (
-              <div className='video-container'>
+              <div className='video-container'>             {/* A video-container CSS class doesn't exist */}
                 <video height={AVATAR_HEIGHT}
                        width={AVATAR_HEIGHT * 0.445}
                        loop={true}
+                       // Suggest moving office_left and office_right to a constants file
+                       // Is setting the src to empty a bug? Could the video just not be rendered instead?
                        src= {useVideoBackground ? "videos/office_left.mp4" : ""}
-                       muted={true}
+                       muted // The explicit true can be omitted. Existence declares truth.
                        autoPlay/>
                 <video height={AVATAR_HEIGHT}
                        width={AVATAR_HEIGHT}
@@ -1580,6 +1626,7 @@ export default function Home() {
               <input type="text"
                      width={AVATAR_HEIGHT * 1.5}
                      name="name"
+                     // Consider using a separate label. Placeholder is less accessible. If you don't want the label to be visible, you can use aria-label.
                      placeholder="What's on your mind?"
                      value={textInput}
                      onChange={(e) => setTextInput(e.target.value)}
@@ -1595,6 +1642,6 @@ export default function Home() {
               onEnded={e => handleListenClick()}
               src={audioUrl}/>
         </main>
-      </div>
+      </>
   );
 }

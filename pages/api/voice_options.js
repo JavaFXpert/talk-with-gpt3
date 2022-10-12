@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
+// JS files are traditionally camelCased or kebab-cased.
+// TypeScript would be especially useful here to enforce a consistent object shape for each option.
 import {GRADUATED, DIDNT_ATTEND} from '../../public/constants';
 
 const voiceOptions = [
   { value: "Hiroto-EN", label: "Yukiko [animated]", language: "en_US",
     nationality: "", phoneNum: "", age: 21,
     livesIn: "", occupation: "", university: "", uniMajor: "", uniYear: DIDNT_ATTEND, hobbies: "",
+    // Suggest grouping under "favorite" property to eliminate redundant prefix.
     favFood: "", favDrink: "", favCoffeeShop: "", favRestaurant: "",
     favMovie: "", favTvShow: "", favSport: "",
     favColor: "", favMusicGenre: "", favBand: "",
     petLikes: "", petDislikes: "",
+    // Suggest grouping under "family" property to eliminate redundant prefix.
     famFather: "", famMother: "", famSisters: "", famBrothers: "",
     famWife: "", famHusband: "", famChildren: "",
     friends: "",

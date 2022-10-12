@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Suggest moving to /constants. This folder is intended for static resources.
 export const GRADUATED = 99;
 export const DIDNT_ATTEND = 0;
 

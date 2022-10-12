@@ -53,6 +53,8 @@ async function ascertainSubject(textToExamine) {
 // TODO: Make this work more consistently
 export async function correctStandardLanguage(textToCorrect, lang) {
   // Try to extract the subject from the current conversation state.
+  // Suggest eliminating Hungarian notation and using TypeScript
+  // Suggest formatting all files with Prettier
   let langStr = "English";
   if (lang.startsWith("es")) {
     langStr = "Spanish";
@@ -65,7 +67,6 @@ export async function correctStandardLanguage(textToCorrect, lang) {
   }
   let subjectPrompt = "Correct this to standard " + langStr + ":\n" +
       "\n";
-
   const responseCorrected = await fetch("/api/generate", {
     method: "POST",
     headers: {
@@ -77,11 +78,13 @@ export async function correctStandardLanguage(textToCorrect, lang) {
       correctStandardLang: true
     })
   });
+  if (!responseCorrected.ok) throw responseCorrected; // This allows the call site to handle the error as desired.
   const dataCorrected = await responseCorrected.json();
   let corrected = dataCorrected.result.trim();
   console.log("CORRECTED:" + corrected);
 
   if (corrected == "") {
+    // Rather than logging, I suggest throwing an error. Then the call site can handle more gracefully display a friendly error message to the user.
     console.log("Restoring original text since corrected text is empty.");
     corrected = textToCorrect;
   }

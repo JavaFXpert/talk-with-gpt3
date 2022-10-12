@@ -36,7 +36,7 @@ export default async function (req, res) {
   const completion = await openai.createCompletion({
     model: req.body.useCustomPrompt ? "davinci" : "text-davinci-002",
     prompt: req.body.convText,
-    temperature: temperature ? 0.0 : 0.9,
+    temperature: temperature ? 0.0 : 0.9, // The default from above seems repeated here and on the following lines. 
     frequency_penalty: frequencyPenalty ? 0.0 : 1.5,
     presence_penalty: presencePenalty ? 0.0 : 0.6,
     max_tokens: 50,

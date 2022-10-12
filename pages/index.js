@@ -1342,6 +1342,7 @@ export default function Home() {
   async function doVideoSpeak(input) {
     let textToSpeak = input.Text;
     // Remove all punctuation and parentheses and single and double quotes from textToSpeak.
+    // This feels like a great thing to unit test. More broadly, I notice there aren't any tests. I suggest Jest with testing-library/react for unit testing, and Cypress or Playwright for in-browser testing.
     textToSpeak = textToSpeak.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
     // Remove yen sign from textToSpeak.
@@ -1411,6 +1412,7 @@ export default function Home() {
     if (fulfillment == "") {
       fulfillment = await fulfillIntent(textOrVoiceInput, lang, conversationText);
       fulfillment = fulfillment.trim();
+      // I see many console.log calls. I suggest using "debugger;", then you can inspect all values in scope in the dev tools. I also suggest using ESLint to warn when console.log is used so that it's not accidentally left in.
       console.log("fulfillment for '" + textOrVoiceInput + "': " + fulfillment);
     }
 

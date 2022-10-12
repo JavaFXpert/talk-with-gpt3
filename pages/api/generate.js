@@ -43,5 +43,7 @@ export default async function (req, res) {
     // stop: req.body.hallucinateIntent ? ["\nHuman:"] : ["\nText:"]
     stop: stopSequences
   });
+  // This presumes as 200, suggest checking for response code and throwing an error if not a 200. 
+  // This suggestion applies to all API calls
   res.status(200).json({ result: completion.data.choices[0].text});
 }
